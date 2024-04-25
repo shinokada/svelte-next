@@ -15,16 +15,20 @@ for directory in */ ; do
   if [ -d "$directory" ]; then
     # Change directory to the current subdirectory
     cd "$directory"
-
+    echo "Running pnpm update ..."
     # Run pnpm update (assuming you're using pnpm)
     pnpm update
 
+    echo "Running pnpm i -D svelte@$svelte_version ..."
+
     # Install the desired Svelte version as a dev dependency
     pnpm i -D svelte@"5.0.0-next.$svelte_version"
-
+    
+    echo "Running pnpm test:integration ..."
     # Run integration tests
     pnpm test:integration
-
+    
+    "All done."
     # Change back to the parent directory
     cd ..
   fi
