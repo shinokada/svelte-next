@@ -1,6 +1,6 @@
 # updateSvelte
 
-Command `updateSvelte 130` runs the following:
+Command `updateSvelte 130` runs the following recursively in a directory:
 
 ```
 pnpm update
