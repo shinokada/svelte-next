@@ -65,7 +65,7 @@ for directory in "$target_dir"/* ; do
     pnpm test:integration
 
     echo "Running git add ..."
-    git add .
+    git add -A
 
     echo "Running git commit ..."
     git commit --message "Update Svelte to $svelte_version"
