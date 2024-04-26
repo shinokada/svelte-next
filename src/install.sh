@@ -71,7 +71,7 @@ for directory in "$target_dir"/* ; do
     git commit --message "Update Svelte to $svelte_version"
 
     echo "Running git push ..."
-    git push origin main
+    git push
 
     "All done."
     # Change back to the parent directory
