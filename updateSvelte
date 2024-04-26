@@ -27,7 +27,16 @@ for directory in */ ; do
     echo "Running pnpm test:integration ..."
     # Run integration tests
     pnpm test:integration
-    
+
+    echo "Running git add ..."
+    ga .
+
+    echo "Running git commit ..."
+    gcmsg "Update Svelte to $svelte_version"
+
+    echo "Running git push ..."
+    ggp
+
     "All done."
     # Change back to the parent directory
     cd ..
