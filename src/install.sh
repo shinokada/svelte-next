@@ -52,6 +52,8 @@ fi
 # Loop through each subdirectory within the target directory
 for directory in "$target_dir"/* ; do
   # Check if it's a directory (avoid hidden directories)
+  bannerColor "Checking $directory" "blue" "*"
+
   if [ -d "$directory" ] && [[ ! $directory =~ ^\./\.* ]]; then
     # Change directory to the current subdirectory
     cd "$directory"
