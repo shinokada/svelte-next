@@ -48,33 +48,42 @@ fi
 # Loop through each subdirectory within the target directory
 for directory in "$target_dir"/* ; do
   # Check if it's a directory (avoid hidden directories)
-  if [ -d "$directory" ]; then
+  if [ -d "$directory" ] && [[ ! $directory =~ ^\./\.* ]]; then
     # Change directory to the current subdirectory
     cd "$directory"
+
     echo "Running pnpm update ..."
     # Run pnpm update (assuming you're using pnpm)
     pnpm update
+    
+    # Get current Svelte version
+    current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
+    # Check if update is needed (desired version > current version)
+    if [[ "$(semver compare "$svelte_version" "$current_version")" == "1" ]]; then
 
-    echo "Running pnpm i -D svelte@$svelte_version ..."
+      echo "Running pnpm i -D svelte@$svelte_version ..."
 
-    # Install the desired Svelte version as a dev dependency
-    pnpm i -D svelte@"5.0.0-next.$svelte_version"
+      # Install the desired Svelte version as a dev dependency
+      pnpm i -D svelte@"5.0.0-next.$svelte_version"
+      
+    else
+      echo "Svelte version $current_version in $directory is already up-to-date."
+    fi
     
     echo "Running pnpm test:integration ..."
     # Run integration tests
     pnpm test:integration
 
-    echo "Running git add ..."
-    git add -A
+    if [ -d "$directory/.git" ]; then
+      echo "Running git add ..."
+      git add -A
 
-    echo "Running git commit ..."
-    git commit --message "Update Svelte to $svelte_version"
+      echo "Running git commit ..."
+      git commit --message "Update Svelte to $svelte_version"
 
-    echo "Running git push ..."
-    git push
-
-    "All done."
-    # Change back to the parent directory
+      echo "Running git push ..."
+      git push
+    fi
     cd ..
   fi
 done
