@@ -15,13 +15,9 @@ parser_definition() {
 
     msg -- '' "Examples:
     
-    cmd1 
-    $SCRIPT_NAME cmd1
-    cmd2 
-    $SCRIPT_NAME cmd2
-    text_example
-    $SCRIPT_NAME text_example
-    Display the version:
+    i 
+    $SCRIPT_NAME i 118 .
+    version 
     $SCRIPT_NAME --version
     Display help:
     $SCRIPT_NAME -h | --help

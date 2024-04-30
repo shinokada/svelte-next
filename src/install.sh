@@ -18,6 +18,8 @@ fn_install() {
     # done
 
     # Get the desired Svelte version from the script argument
+ bannerColor 'Welcome to updateSvelte.' "blue" "*"
+
 svelte_version="$1"
 
 # Check if an argument is provided
@@ -45,6 +47,8 @@ if ! [ -d "$target_dir" ]; then
   exit 1
 fi
 
+ bannerColor "This script update svelte version in $target_dir to $svelte_version." "blue" "*"
+
 # Loop through each subdirectory within the target directory
 for directory in "$target_dir"/* ; do
   # Check if it's a directory (avoid hidden directories)
@@ -55,7 +59,7 @@ for directory in "$target_dir"/* ; do
     echo "Running pnpm update ..."
     # Run pnpm update (assuming you're using pnpm)
     pnpm update
-    
+
     # Get current Svelte version
     current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
     # Check if update is needed (desired version > current version)
