@@ -7,13 +7,13 @@ fn_install() {
 
   # Check if an argument is provided
   if [ -z "$svelte_version" ]; then
-    echo "Error: Please provide the Svelte version (e.g., updateSvelte 120)"
+    bannerColor '"Error: Please provide the Svelte version (e.g., updateSvelte i 120)' "red" "*"
     exit 1
   fi
 
   # Check for a minimum of two arguments (version and target directory)
   if [ $# -lt 2 ]; then
-    echo "Error: Please provide the Svelte version and target directory (e.g., my-script 120 ./my-project)."
+    bannerColor '"Error: Please provide the Svelte version and target directory (e.g., updateSvelte i 120 ./my-project).' "red" "*"
     exit 1
   fi
 
@@ -26,7 +26,7 @@ fn_install() {
 
   # Check if the target directory exists and is a directory
   if ! [ -d "$target_dir" ]; then
-    echo "Error: Target directory '$target_dir' does not exist or is not a directory."
+    bannerColor "Error: Target directory $target_dir does not exist or is not a directory." "red" "*"
     exit 1
   fi
 
@@ -66,5 +66,5 @@ fn_install() {
     fi
   done
 
-  echo "Svelte updated to 5.0.0-next.$svelte_version and integration tests run in subdirectories."
+  bannerColor "Svelte updated to $svelte_version and integration tests run in subdirectories." "green" "*"
 }
