@@ -38,53 +38,50 @@ fn_update() {
     if [ -d "$directory" ]; then 
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
+      # Get current Svelte version
+      current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
+      update_needed=false
 
-      if [ -d "$directory/.git" ]; then
-        # Get current Svelte version
-        current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
-        update_needed=false
-
-        if [[ "$current_version" =~ "next" ]]; then
-          # If current_version has "next", check version comparison
-          if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
-            update_needed=true 
-          fi
+      if [[ "$current_version" =~ "next" ]]; then
+        # If current_version has "next", check version comparison
+        if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
+          update_needed=true 
         fi
-
-        if [[ $update_needed == true ]]; then
-
-          if [[ $FLAG_P == 1 ]];then
-            bannerColor "Running pnpm update in $directory ..." "magenta" "*"
-            pnpm update
-            bannerColor "Update completed" "green" "*"
-          fi
-          
-          
-          bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-          pnpm i -D svelte@"5.0.0-next.$svelte_version"
-          bannerColor "Update completed" "green" "*"
-          
-          if [[ $FLAG_T == 1 ]];then
-            bannerColor "Running pnpm test:integration ..." "magenta" "*"
-            pnpm test:integration
-            bannerColor "Test completed" "green" "*"
-          fi
-    
-          if [[ $FLAG_G == 1 ]];then
-            bannerColor "Running git commands ..." "magenta" "*"
-            git add -A && git commit --message "Update Svelte to $svelte_version" && git push
-            bannerColor "Git commands completed" "green" "*"
-          fi
-          
-        else
-          bannerColor  "Svelte version $current_version (next) is likely up-to-date (not updating)." "blue" "*"
-        fi
-        cd ..
-      else
-        bannerColor "Directory $directory does not exist." "red" "*"
       fi
+
+      if [[ $update_needed == true ]]; then
+
+        if [[ $FLAG_P == 1 ]];then
+          bannerColor "Running pnpm update in $directory ..." "magenta" "*"
+          pnpm update
+          bannerColor "Update completed" "green" "*"
+        fi
+        
+        bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+        pnpm i -D svelte@"5.0.0-next.$svelte_version"
+        bannerColor "Update completed" "green" "*"
+        
+        if [[ $FLAG_T == 1 ]];then
+          bannerColor "Running pnpm test:integration ..." "magenta" "*"
+          pnpm test:integration
+          bannerColor "Test completed" "green" "*"
+        fi
+  
+        if [[ -d "$directory/.git" ]] && [[ $FLAG_G == 1 ]]; then
+          bannerColor "Running git commands ..." "magenta" "*"
+          git add -A && git commit --message "Update Svelte to $svelte_version" && git push
+          bannerColor "Git commands completed" "green" "*"
+        else
+          bannerColor "Skipping git commands" "yellow" "*"
+        fi
+      else
+        bannerColor  "(Not updating) Not able find Svelte version or is likely up-to-date ." "yellow" "*"
+      fi
+      cd ..
     else
-      bannerColor "Directory $directory is not a directory." "red" "*"
+      bannerColor "$directory is not a directory." "red" "*"
     fi
   done
+
+  bannerColor "End of the script." "blue" "*"
 }
