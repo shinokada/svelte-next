@@ -8,16 +8,16 @@ parser_definition() {
 
     msg -- '' 'Commands: '
     msg -- 'Use command -h for a command help.'
-    cmd svelte -- "Install svelte version"
+    cmd svelte -- "Install next version in the subdirector of the current directory"
     # cmd cmd2 -- "CMD2 description."
     # cmd text_example -- "Print different type of texts."
     # cmd create -- "Create this and that."
 
     msg -- '' "Examples:
     
-    i 
-    $SCRIPT_NAME svelte 120 .
-    version 
+    Install svelte@5.0.0-next.120 in the subdirectory of the current directory:
+    $SCRIPT_NAME update 120 .
+    version: 
     $SCRIPT_NAME --version
     Display help:
     $SCRIPT_NAME -h | --help
