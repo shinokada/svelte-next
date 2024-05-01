@@ -16,7 +16,7 @@ parser_definition() {
     msg -- '' "Examples:
     
     i 
-    $SCRIPT_NAME i 118 .
+    $SCRIPT_NAME svelte 120 .
     version 
     $SCRIPT_NAME --version
     Display help:
