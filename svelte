@@ -87,7 +87,7 @@ if [ $# -gt 0 ]; then
     cmd=$1
     shift
     case $cmd in
-    svelte)
+    update)
         eval "$(getoptions parser_definition_install parse "$0")"
         parse "$@"
         eval "set -- $REST"
