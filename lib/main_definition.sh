@@ -15,11 +15,17 @@ parser_definition() {
 
     msg -- '' "Examples:
     
-    Install svelte@5.0.0-next.120 in the subdirectories of the current directory:
+    Use $SCRIPT_NAME update version-number target-directory:
+    For example, installing svelte@5.0.0-next.120 in the subdirectories of the current directory.
+
     $SCRIPT_NAME update 120 .
-    version: 
+
+    To display version: 
+
     $SCRIPT_NAME --version
-    Display help:
+    
+    To display help:
+
     $SCRIPT_NAME -h | --help
 "
 }
