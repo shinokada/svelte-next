@@ -54,17 +54,23 @@ fn_update() {
         if [[ $FLAG_P == 1 ]];then
           bannerColor "Running pnpm update in $directory ..." "magenta" "*"
           pnpm update
-          bannerColor "Update completed" "green" "*"
+          bannerColor "pnpm update completed" "green" "*"
         fi
         
-        bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-        pnpm i -D svelte@"5.0.0-next.$svelte_version"
-        bannerColor "Update completed" "green" "*"
-        
+        if [[ "$svelte_version" == "next" ]];then
+          bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+          pnpm i -D svelte@next
+          bannerColor "pnpm i -D svelte@next completed" "green" "*"
+        else
+          bannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
+          pnpm i -D svelte@"5.0.0-next.$svelte_version"
+          bannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
+        fi
+
         if [[ $FLAG_T == 1 ]];then
           bannerColor "Running pnpm test:integration ..." "magenta" "*"
           pnpm test:integration
-          bannerColor "Test completed" "green" "*"
+          bannerColor "pnpm test:integration completed" "green" "*"
         fi
   
         if [[ -d "$directory/.git" ]] && [[ $FLAG_G == 1 ]]; then
