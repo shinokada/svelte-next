@@ -1,6 +1,5 @@
 fn_update() {
 
-  # Get the desired Svelte version from the script argument
   bannerColor 'Welcome to svelte-next update.' "blue" "*"
 
   if [[ $# -gt 0  ]];then
@@ -89,5 +88,16 @@ fn_update() {
     fi
   done
 
-  bannerColor "End of the script." "blue" "*"
+  bannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
+  bannerColor "I may be over, but the bugs are eternal. - Some Programmer." "blue" "*"
+
+  # joke_json=$(curl -s https://v2.jokeapi.dev/joke/Programming,Misc?blacklistFlags=nsfw,sexist&type=single)
+  # joke_text=$(echo "$joke_json" | jq -r '.joke')
+
+  # # Check if joke extraction was successful (non-empty string)
+  # if [[ -n "$joke_text" ]]; then
+  #   # Echo the joke
+  #   echo "Here's your joke:"
+  #   echo "$joke_text"
+  # fi
 }
