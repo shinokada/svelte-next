@@ -1,7 +1,7 @@
 fn_update() {
 
   # Get the desired Svelte version from the script argument
-  bannerColor 'Welcome to svelte update.' "blue" "*"
+  bannerColor 'Welcome to svelte-next update.' "blue" "*"
 
   if [[ $# -gt 0  ]];then
     target_dir="$1"
