@@ -87,13 +87,13 @@ if [ $# -gt 0 ]; then
     cmd=$1
     shift
     case $cmd in
-    i)
+    svelte)
         eval "$(getoptions parser_definition_install parse "$0")"
         parse "$@"
         eval "set -- $REST"
         # shellcheck disable=SC1091
-        . "${script_dir}/src/install.sh"
-        fn_install "$@"
+        . "${script_dir}/src/update.sh"
+        fn_update "$@"
         ;;
     # cmd2)
     #     eval "$(getoptions parser_definition_cmd2 parse "$0")"

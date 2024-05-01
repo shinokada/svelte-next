@@ -8,7 +8,7 @@ parser_definition() {
 
     msg -- '' 'Commands: '
     msg -- 'Use command -h for a command help.'
-    cmd i -- "Install svelte version"
+    cmd svelte -- "Install svelte version"
     # cmd cmd2 -- "CMD2 description."
     # cmd text_example -- "Print different type of texts."
     # cmd create -- "Create this and that."

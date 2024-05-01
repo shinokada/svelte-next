@@ -1,4 +1,4 @@
-fn_install() {
+fn_update() {
 
   # Get the desired Svelte version from the script argument
   bannerColor 'Welcome to updateSvelte.' "blue" "*"
