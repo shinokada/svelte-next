@@ -46,7 +46,7 @@ fn_install() {
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
       # Check if update is needed (desired version > current version)
-      if [[ "$(semver compare "$svelte_version" "$current_version")" == "1" ]]; then
+      if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
 
         bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
 
