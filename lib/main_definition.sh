@@ -1,30 +1,39 @@
 # shellcheck disable=SC1083
 parser_definition() {
     setup REST help:usage abbr:true -- \
-        "Usage: ${2##*/} [command] [options...] [arguments...]"
+        "Usage: ${2##*/} [command] [options...]"
     msg -- '' 'Options:'
     disp :usage -h --help
     disp VERSION --version
 
     msg -- '' 'Commands: '
     msg -- 'Use command -h for a command help.'
-    cmd svelte -- "Install next version in the subdirectories of the current directory"
-    # cmd cmd2 -- "CMD2 description."
-    # cmd text_example -- "Print different type of texts."
-    # cmd create -- "Create this and that."
+    cmd update -- "Install next version in the subdirectories of the current directory"
+    cmd cmd2 -- "CMD2 description."
 
     msg -- '' "Examples:
     
-    Use $SCRIPT_NAME update version-number target-directory:
-    For example, installing svelte@5.0.0-next.120 in the subdirectories of the current directory.
+    - Use $SCRIPT_NAME update version-number target-directory. For example, installing svelte@5.0.0-next.120, running pnmp update, git add, commit, and push, pnpm test:integration in the subdirectories of the current directory:
 
     $SCRIPT_NAME update 120 .
 
-    To display version: 
+    - Use -p flag to NOT to run pnpm update:
+
+    $SCRIPT_NAME update -p 120 .
+
+    - Use -g flag to NOT to run git add, commit, and push:
+
+    $SCRIPT_NAME update -g 120 .
+
+    - Use -t flag to NOT to run pnpm test:integration:
+
+    $SCRIPT_NAME update -t 120 .
+
+    - To display version: 
 
     $SCRIPT_NAME --version
     
-    To display help:
+    - To display help:
 
     $SCRIPT_NAME -h | --help
 "

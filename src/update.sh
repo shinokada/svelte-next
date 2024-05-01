@@ -1,7 +1,7 @@
 fn_update() {
 
   # Get the desired Svelte version from the script argument
-  bannerColor 'Welcome to updateSvelte.' "blue" "*"
+  bannerColor 'Welcome to svelte update.' "blue" "*"
 
   svelte_version="$1"
 
@@ -30,52 +30,59 @@ fn_update() {
     exit 1
   fi
 
-  bannerColor "This script update svelte version in $target_dir to $svelte_version." "blue" "*"
+  bannerColor "This script will update svelte version, run pnpm update, git add, commit, and push, pnpm test:integration in $target_dir to $svelte_version. Use -h or --help for help." "blue" "*"
 
-  # Loop through each subdirectory within the target directory
+
   for directory in "$target_dir"/* ; do
-    # Check if it's a directory (avoid hidden directories)
     bannerColor "Checking $directory" "blue" "*"
 
     if [ -d "$directory" -a -d "$directory/.git" ]; then
       cd "$directory"
-      bannerColor "Running pnpm update in $directory ..." "magenta" "*"
-      # Run pnpm update (assuming you're using pnpm)
-      pnpm update
 
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
-      # Check for update condition
-      update_needed=false  # Initialize a flag for update
+      update_needed=false
 
       if [[ "$current_version" =~ "next" ]]; then
         # If current_version has "next", check version comparison
         if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
-          update_needed=true  # Set flag if both conditions met
+          update_needed=true 
         fi
       fi
-      # Check if update is needed (desired version > current version)
+
       if [[ $update_needed == true ]]; then
 
+        if [[ $FLAG_P == 1 ]];then
+          bannerColor "Running pnpm update in $directory ..." "magenta" "*"
+          pnpm update
+          bannerColor "Update completed" "green" "*"
+        fi
+        
+        
         bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-
-        # Install the desired Svelte version as a dev dependency
         pnpm i -D svelte@"5.0.0-next.$svelte_version"
-
-        bannerColor "Running pnpm test:integration ..." "magenta" "*"
-        # Run integration tests
-        pnpm test:integration
-
-        bannerColor "Running git commands ..." "magenta" "*"
-        git add -A && git commit --message "Update Svelte to $svelte_version" && git push
+        bannerColor "Update completed" "green" "*"
+        
+        if [[ $FLAG_T == 1 ]];then
+          bannerColor "Running pnpm test:integration ..." "magenta" "*"
+          pnpm test:integration
+          bannerColor "Test completed" "green" "*"
+        fi
+  
+        if [[ $FLAG_G == 1 ]];then
+          bannerColor "Running git commands ..." "magenta" "*"
+          git add -A && git commit --message "Update Svelte to $svelte_version" && git push
+          bannerColor "Git commands completed" "green" "*"
+        fi
+        
       else
         bannerColor  "Svelte version $current_version (next) is likely up-to-date (not updating)." "blue" "*"
       fi
       cd ..
     elif [ -d "$directory" ]; then
-      echo "Directory $directory exists, but it lacks a .git directory."
+      bannerColor "Directory $directory exists, but it lacks a .git directory." "red" "*"
     else
-      echo "Directory $directory does not exist."
+      bannerColor "Directory $directory does not exist." "red" "*"
     fi
   done
 }

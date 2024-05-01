@@ -52,8 +52,8 @@ script_dir=${self%/*}
     . "${script_dir}/lib/getoptions.sh"
     . "${script_dir}/lib/main_definition.sh"
     . "${script_dir}/lib/utils.sh"
-    . "${script_dir}/lib/install_definition.sh"
-    # . "${script_dir}/lib/cmd2_definition.sh"
+    . "${script_dir}/lib/svelte_definition.sh"
+    . "${script_dir}/lib/cmd2_definition.sh"
     # . "${script_dir}/lib/create_definition.sh"
     # import only one of helpers file
     # . "${script_dir}/lib/shell_helpers.sh"
@@ -88,21 +88,21 @@ if [ $# -gt 0 ]; then
     shift
     case $cmd in
     update)
-        eval "$(getoptions parser_definition_install parse "$0")"
+        eval "$(getoptions parser_definition_svelte parse "$0")"
         parse "$@"
         eval "set -- $REST"
         # shellcheck disable=SC1091
         . "${script_dir}/src/update.sh"
         fn_update "$@"
         ;;
-    # cmd2)
-    #     eval "$(getoptions parser_definition_cmd2 parse "$0")"
-    #     parse "$@"
-    #     eval "set -- $REST"
-    #     # shellcheck disable=SC1091
-    #     . "${script_dir}/src/cmd2.sh"
-    #     fn_cmd2 "$@"
-    #     ;;
+    cmd2)
+        eval "$(getoptions parser_definition_cmd2 parse "$0")"
+        parse "$@"
+        eval "set -- $REST"
+        # shellcheck disable=SC1091
+        . "${script_dir}/src/cmd2.sh"
+        fn_cmd2 "$@"
+        ;;
     # text_example)
     #     # shellcheck disable=SC1091
     #     . "${script_dir}/src/text_example.sh"

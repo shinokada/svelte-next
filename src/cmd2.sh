@@ -1,8 +1,12 @@
 fn_cmd2() {
     # from https://github.com/ko1nksm/getoptions/blob/master/examples/advanced.sh
     
+    echo "FLAG_P: $FLAG_P"
+    echo "FLAG_T: $FLAG_T"
+    echo "FLAG_G: $FLAG_G"
     echo "FLAG_A: $FLAG_A"
     echo "FLAG_B: $FLAG_B"
+    
     if [ ${FLAG_C+x} ]; then
         echo "FLAG_C: $FLAG_C"
     else

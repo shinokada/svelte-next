@@ -9,6 +9,9 @@ parser_definition_cmd2() {
     msg label:"OPTION" -- "DESCRIPTION"
     flag FLAG_A -a --flag-a on:1 no: init:= export:
     flag FLAG_B -b +b --{no-}flag-b on:ON no:NO init:@no
+    flag FLAG_P -p +p --{no-}flag-p on:0 no:1 init:@no -- "Use -p not to run pnpm update"
+    flag FLAG_T -t +t --{no-}flag-t on:0 no:1 init:@no -- "Use -t not to run pnpm test:integration"
+    flag FLAG_G -g +g --{no-}flag-t on:0 no:1 init:@no -- "Use -g not to run git add, commit, and push"
     flag FLAG_C -c +c --{no-}flag-c on:1 no:0 init:@unset
     flag VERBOSE -v +v --{no-}verbose counter:true init:=0
     param PARAM -p --param init:="default"
