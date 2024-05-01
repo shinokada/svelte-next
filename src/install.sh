@@ -45,8 +45,17 @@ fn_install() {
 
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
+      # Check for update condition
+      update_needed=false  # Initialize a flag for update
+
+      if [[ "$current_version" =~ "next" ]]; then
+        # If current_version has "next", check version comparison
+        if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
+          update_needed=true  # Set flag if both conditions met
+        fi
+      fi
       # Check if update is needed (desired version > current version)
-      if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
+      if [[ $update_needed == true ]]; then
 
         bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
 
@@ -60,11 +69,13 @@ fn_install() {
         bannerColor "Running git commands ..." "magenta" "*"
         git add -A && git commit --message "Update Svelte to $svelte_version" && git push
       else
-        bannerColor "Svelte version $current_version in $directory is already up-to-date." "blue" "*"
+        bannerColor  "Svelte version $current_version (next) is likely up-to-date (not updating)." "blue" "*"
       fi
       cd ..
+    elif [ -d "$directory" ]; then
+      echo "Directory $directory exists, but it lacks a .git directory."
+    else
+      echo "Directory $directory does not exist."
     fi
   done
-
-  bannerColor "Svelte updated to $svelte_version and integration tests run in subdirectories." "green" "*"
 }
