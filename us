@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# Title:         Shellscript Starter
-# Description:   Shellscript starter for Bash/Zsh/Sh/Ksh
+# Title:         us (Update Svelte)
+# Description:   This script update Svelte version
 # Author:        your-name <yourname@gmail.com>
-# Date:          2022-01-10
+# Date:          2024-05-01
 
 set -eu
-VERSION="0.0.5"
+VERSION="0.0.6"
 SCRIPT_NAME=$(basename "$0")
 
 # Keep readlinkf function

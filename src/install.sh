@@ -37,9 +37,9 @@ fn_install() {
     # Check if it's a directory (avoid hidden directories)
     bannerColor "Checking $directory" "blue" "*"
 
-    if [ -d "$directory" -a -d "$directory/.git" ]; then
-
-      bannerColor "Running pnpm update ..." "magenta" "*"
+    if [ -d "$directory" && -d "$directory/.git" ]; then
+      cd "$directory"
+      bannerColor "Running pnpm update in $directory ..." "magenta" "*"
       # Run pnpm update (assuming you're using pnpm)
       pnpm update
 
