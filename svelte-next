@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Title:         us (Update Svelte)
+# Title:         svelte-next
 # Description:   This script update Svelte version
-# Author:        your-name <yourname@gmail.com>
+# Author:        @shinokada
 # Date:          2024-05-01
 
 set -eu
