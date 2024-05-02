@@ -15,12 +15,6 @@ fn_update() {
     svelte_version="$SVELTE_NEXT"
   fi
 
-  # Check for a minimum of two arguments (version and target directory)
-  # if [ $# -lt 2 ]; then
-  #   bannerColor '"Error: Please provide the Svelte version and target directory (e.g., updateSvelte i 120 ./my-project).' "red" "*"
-  #   exit 1
-  # fi
-
   # Check if the target directory exists and is a directory
   if ! [ -d "$target_dir" ]; then
     bannerColor "Error: Target directory $target_dir does not exist or is not a directory." "red" "*"
@@ -39,7 +33,7 @@ fn_update() {
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
-      bannerColor "Your current Svelte version is: $current_version" "blue" "*"
+      bannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
 
