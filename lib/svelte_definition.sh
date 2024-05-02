@@ -11,3 +11,16 @@ parser_definition_svelte() {
     param SVELTE_NEXT -v --svelte validate:number -- "Svelte 5 version number"
     disp :usage -h --help
 }
+
+error() {
+	case $2 in
+		unknown) echo "$1" ;;
+		number:*) echo "Not a number: $3" ;;
+		*) return 0 ;; # Display default error
+	esac
+	return 1
+}
+
+number() {
+	case $OPTARG in (*[!0-9]*) return 1; esac
+}
