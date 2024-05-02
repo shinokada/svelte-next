@@ -38,7 +38,7 @@ fn_update() {
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
-      current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
+      current_version=$(pnpm list svelte --depth=0 | tail -n 1)
       bannerColor "Your current Svelte version is: $current_version" "blue" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
