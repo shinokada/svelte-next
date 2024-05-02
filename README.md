@@ -1,6 +1,18 @@
-# svelte-update
+# svelte-update: Automate Svelte Version Updates
 
-`svelte-next` updates svelte next version, run `pnmp update`, git add, commit, and push, `pnpm test:integration` in the subdirectories.
+This script automates updating Svelte versions (specifically targeting next versions) in project directories.
+
+## Features:
+
+- Updates Svelte to the specified version (defaults to "next").
+- Runs pnpm update, pnpm test:integration, and optionally git add, commit, and push.
+- Displays colored messages for informative progress.
+- Supports providing the target directory as a command-line argument.
+
+## Requirements:
+
+- pnpm package manager
+- git version control system (optional - for git commands)
 
 ## Installation
 
@@ -60,3 +72,16 @@ svelte-next --version
 svelte-next -h | --help
 ```
 
+## Optional Flags:
+
+```
+-h or --help: Displays help message.
+-p: Skip running pnpm update (default: runs).
+-t: Skip running pnpm test:integration (default: runs).
+-g: Skip running git commands (default: runs if git repo present).
+```
+
+## Note:
+
+- The script assumes the target directory structure contains project subdirectories where Svelte is installed.
+- Ensure you have proper permissions to modify files and run git commands in the target directories.
