@@ -39,16 +39,9 @@ fn_update() {
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | awk '{print $2}')
-      update_needed=false
+      bannerColor "Your current Svelte version is: $current_version" "blue" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
-        # If current_version has "next", check version comparison
-        if [[ "$(semver compare "$svelte_version" "$current_version")" -lt "1" ]]; then
-          update_needed=true 
-        fi
-      fi
-
-      if [[ $update_needed == true ]]; then
 
         if [[ $FLAG_P == 1 ]];then
           bannerColor "Running pnpm update in $directory ..." "magenta" "*"
