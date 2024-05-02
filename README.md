@@ -1,6 +1,6 @@
-＃ svelte-update
+# svelte-update
 
-`svelte-next` updates svelte next version in a target-directory. For example, installing latest svelte@next, running pnmp update, git add, commit, and push, pnpm test:integration in the subdirectories.
+`svelte-next` updates svelte next version, run `pnmp update`, git add, commit, and push, `pnpm test:integration` in the subdirectories.
 
 ## Installation
 
