@@ -1,6 +1,32 @@
 fn_update() {
 
   bannerColor 'Welcome to svelte-next update.' "blue" "*"
+if [[ -d "." ]]; then
+  echo "yes 1"
+else
+  echo "no 1"
+fi
+
+if [[ -f "./package.json" ]]; then
+  echo "yes 2"
+else
+  echo "no 2"
+fi
+
+if [[ $(grep -q '"svelte":' "./package.json") ]]; then
+  echo "yes 3"
+else
+  echo "no 3"
+fi
+
+# if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json") ]]; then
+#   echo "yes 4"
+# else
+#   echo "no 4"
+# fi
+
+exit
+
 
   if [[ $# -gt 0  ]];then
     target_dir="$1"
@@ -91,7 +117,7 @@ fn_update() {
       fi
       cd ..
     else
-      bannerColor "$directory is not a valid Svelte project." "red" "*"
+      bannerColor "The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*"
     fi
   done
 
