@@ -21,15 +21,22 @@ fn_update() {
     exit 1
   fi
 
-  bannerColor "This script will update svelte version 5 $svelte_version in the $target_dir directories." "blue" "*"
+  bannerColor "This script will run the following tasks:" "blue" "*"
 
-  bannerColor "And run pnpm update, git add, commit, push, pnpm test:integration." "blue" "*"
+  if [[ $FLAG_P == 1 ]];then
+    bannerColor "pnpm update will be run" "blue" "*"
+  fi
+  if [[ $FLAG_S == 1 ]];then
+    bannerColor "pnpm i -D svelte@$svelte_version will be run" "blue" "*"
+  fi
+  if [[ $FLAG_T == 1 ]];then
+    bannerColor "pnpm test:integration will be run" "blue" "*"
+  fi
+  if [[ $FLAG_G == 1 ]];then
+    bannerColor "git add, commit, and push will be run" "blue" "*"
+  fi
   
   bannerColor "Use -h or --help for help. " "blue" "*"
-
-  # Get current Svelte version
-  # current_version=$(pnpm list svelte --depth=1 | tail -n 1)
-  # bannerColor "Your current Svelte version is: $current_version" "green" "*"
 
   for directory in "$target_dir"/* ; do
     if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json") ]]; then
