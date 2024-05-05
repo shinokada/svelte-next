@@ -32,7 +32,7 @@ fn_update() {
   # bannerColor "Your current Svelte version is: $current_version" "green" "*"
 
   for directory in "$target_dir"/* ; do
-    if [[ -d "$directory" && $(grep -q '"svelte":' "$directory/package.json") ]]; then
+    if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json") ]]; then
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
@@ -83,8 +83,8 @@ fn_update() {
         bannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
       fi
       cd ..
-    else
-      bannerColor "$directory is not a directory." "red" "*"
+    # else
+    #   bannerColor "$directory is not a valid Svelte project." "red" "*"
     fi
   done
 
