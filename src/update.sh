@@ -41,22 +41,30 @@ fn_update() {
           bannerColor "Running pnpm update in $directory ..." "magenta" "*"
           pnpm update
           bannerColor "pnpm update completed" "green" "*"
+        else
+          bannerColor "Skipping git pnpm update." "yellow" "*"
         fi
         
-        if [[ "$svelte_version" == "next" ]];then
-          bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-          pnpm i -D svelte@next
-          bannerColor "pnpm i -D svelte@next completed" "green" "*"
+        if [[ $FLAG_S == 1 ]];then
+          if [[ "$svelte_version" == "next" ]];then
+            bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+            pnpm i -D svelte@next
+            bannerColor "pnpm i -D svelte@next completed" "green" "*"
+          else
+            bannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
+            pnpm i -D svelte@"5.0.0-next.$svelte_version"
+            bannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
+          fi
         else
-          bannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
-          pnpm i -D svelte@"5.0.0-next.$svelte_version"
-          bannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
+          bannerColor "Skipping updating svelte." "yellow" "*"
         fi
 
         if [[ $FLAG_T == 1 ]];then
           bannerColor "Running pnpm test:integration ..." "magenta" "*"
           pnpm test:integration
           bannerColor "pnpm test:integration completed" "green" "*"
+        else
+          bannerColor "Skipping pnpm test:integration." "yellow" "*"
         fi
   
         if [[ -d "$directory/.git" ]] && [[ $FLAG_G == 1 ]]; then
@@ -66,6 +74,7 @@ fn_update() {
         else
           bannerColor "Skipping git commands" "yellow" "*"
         fi
+
       else
         bannerColor  "(Not updating) Not able find Svelte version or is likely up-to-date ." "yellow" "*"
       fi
