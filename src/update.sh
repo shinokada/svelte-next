@@ -27,8 +27,12 @@ fn_update() {
   
   bannerColor "Use -h or --help for help. " "blue" "*"
 
+  # Get current Svelte version
+  # current_version=$(pnpm list svelte --depth=0 | tail -n 1)
+  # bannerColor "Your current Svelte version is: $current_version" "green" "*"
+
   for directory in "$target_dir"/* ; do
-    if [ -d "$directory" ]; then 
+    if [[ -d "$directory" && $(pnpm list svelte --depth=0 2>/dev/null | grep -q svelte) ]]; then
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
@@ -76,7 +80,7 @@ fn_update() {
         fi
 
       else
-        bannerColor  "(Not updating) Not able find Svelte version or is likely up-to-date ." "yellow" "*"
+        bannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
       fi
       cd ..
     else
