@@ -83,8 +83,8 @@ fn_update() {
         bannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
       fi
       cd ..
-    # else
-    #   bannerColor "$directory is not a valid Svelte project." "red" "*"
+    else
+      bannerColor "$directory is not a valid Svelte project." "red" "*"
     fi
   done
 
