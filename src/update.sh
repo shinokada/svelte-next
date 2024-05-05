@@ -67,7 +67,7 @@ fn_update() {
           bannerColor "Skipping pnpm test:integration." "yellow" "*"
         fi
   
-        if [[ -d "$directory/.git" ]] && [[ $FLAG_G == 1 ]]; then
+        if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           bannerColor "Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $svelte_version" && git push
           bannerColor "Git commands completed" "green" "*"
