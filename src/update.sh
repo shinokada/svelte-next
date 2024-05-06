@@ -24,22 +24,22 @@ fn_update() {
   bannerColor "This script will run the following tasks:" "blue" "*"
 
   if [[ $FLAG_P == 1 ]];then
-    bannerColor "pnpm update will be run" "blue" "*"
+    bannerColor "pnpm update" "blue" "*"
   fi
   if [[ $FLAG_S == 1 ]];then
-    bannerColor "pnpm i -D svelte@$svelte_version will be run" "blue" "*"
+    bannerColor "pnpm i -D svelte@$svelte_version" "blue" "*"
   fi
   if [[ $FLAG_T == 1 ]];then
-    bannerColor "pnpm test:integration will be run" "blue" "*"
+    bannerColor "pnpm test:integration" "blue" "*"
   fi
   if [[ $FLAG_G == 1 ]];then
-    bannerColor "git add, commit, and push will be run" "blue" "*"
+    bannerColor "git add, commit, and push" "blue" "*"
   fi
   
   bannerColor "Use -h or --help for help. " "blue" "*"
 
   for directory in "$target_dir"/* ; do
-    if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "./package.json" && echo $? ) ]]; then
+    if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
