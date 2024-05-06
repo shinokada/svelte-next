@@ -45,16 +45,16 @@ awesome install shinokada/svelte-next
 
 ```sh
 # Install the latest and run pnpm update, pnpm test:integration and git add, commit, and push if it is a git repo in subdirectories of the current directory
-
 svelte-next update .
 
 # Use -v param to install a certain Svelte next version.
-
 svelte-next update -v 120 .
 
 # Use -p flag to NOT to run pnpm update:
-
 svelte-next update -p .
+
+# Use -s flag to NOT to run updating svelte:
+svelte-next update -s .
 
 # Use -g flag to NOT to run git add, commit, and push:
 svelte-next update -g .
@@ -64,6 +64,7 @@ svelte-next update -t .
 
 # Combine the flags
 svelte-next update -pg .
+svelte-next update -pst .
 
 # To display version: 
 svelte-next --version
