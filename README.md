@@ -12,7 +12,7 @@ This script automates updating Svelte versions (specifically targeting next vers
 ## Requirements:
 
 - pnpm package manager
-- git version control system (optional - for git commands)
+- git
 
 ## Installation
 
