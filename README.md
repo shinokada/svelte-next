@@ -1,4 +1,6 @@
-# svelte-next: Automate Svelte Version Updates
+# Svelte-Next
+
+## Automate Svelte Version Updates
 
 This script automates updating Svelte versions (specifically targeting next versions) in project directories.
 
