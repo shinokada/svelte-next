@@ -77,9 +77,10 @@ svelte-next -h | --help
 
 ```
 -h or --help: Displays help message.
--p: Skip running pnpm update (default: runs).
--t: Skip running pnpm test:integration (default: runs).
--g: Skip running git commands (default: runs if git repo present).
+-s: Skip running updating svelte.
+-p: Skip running pnpm update.
+-t: Skip running pnpm test:integration.
+-g: Skip running git commands.
 ```
 
 ## Note:
