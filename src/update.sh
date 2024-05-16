@@ -96,7 +96,11 @@ fn_update() {
   done
 
   bannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
-  bannerColor "I may be over, but the bugs are eternal. - Some Programmer." "blue" "*"
+  QUOTE=$(curl -s https://api.quotable.io/quotes/random | jq -r '.content + " - " + .author')
+  if [[ -n "$QUOTE" ]]; then
+    bannerColor "$QUOTE" "blue" "*" 
+  fi
+
 
   # joke_json=$(curl -s https://v2.jokeapi.dev/joke/Programming,Misc?blacklistFlags=nsfw,sexist&type=single)
   # joke_text=$(echo "$joke_json" | jq -r '.joke')
