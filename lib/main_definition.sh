@@ -9,6 +9,7 @@ parser_definition() {
     msg -- '' 'Commands: '
     msg -- 'Use command -h for a command help.'
     cmd update -- "Install next version in the subdirectories of the current directory"
+    cmd cmd2 -- "Test"
 
     msg -- '' "Examples:
     

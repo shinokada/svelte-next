@@ -53,6 +53,7 @@ script_dir=${self%/*}
     . "${script_dir}/lib/main_definition.sh"
     . "${script_dir}/lib/utils.sh"
     . "${script_dir}/lib/svelte_definition.sh"
+    . "${script_dir}/lib/cmd2_definition.sh"
 }
 
 # Keep it. You need this for main parser.
