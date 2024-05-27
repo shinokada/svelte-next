@@ -15,7 +15,7 @@ parser_definition() {
     
     - Use $SCRIPT_NAME update target-directory. For example, installing latest svelte@5.0.0-next, running pnmp update, git add, commit, and push, pnpm test:integration in the subdirectories of the current directory:
 
-    $SCRIPT_NAME .
+    $SCRIPT_NAME update .
 
     - Use -v param to install a certain Svelte next version.
 
