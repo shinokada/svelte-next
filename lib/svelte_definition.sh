@@ -8,6 +8,7 @@ parser_definition_svelte() {
     flag FLAG_S -s +s --{no-}flag-s on:0 no:1 init:@no -- "Use -s not to run pnpm i -D svelte@next"
     flag FLAG_T -t +t --{no-}flag-t on:0 no:1 init:@no -- "Use -t not to run pnpm test:integration"
     flag FLAG_G -g +g --{no-}flag-t on:0 no:1 init:@no -- "Use -g not to run git add, commit, and push"
+    flag FROM -f --from validate:number -- "Use -f for starting index of subdirectory"
     param SVELTE_NEXT -v --svelte validate:number -- "Svelte 5 version number"
     disp :usage -h --help
 }

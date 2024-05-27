@@ -35,10 +35,18 @@ fn_update() {
   if [[ $FLAG_G == 1 ]];then
     bannerColor "git add, commit, and push" "blue" "*"
   fi
+  if [[ $FROM ]];then
+    bannerColor "Starting from index $FROM" "blue" "*"
+  fi
   
   bannerColor "Use -h or --help for help. " "blue" "*"
 
+  count=0
   for directory in "$target_dir"/* ; do
+    if [[ $FROM -ge 1 ]] && (( count < FROM )); then
+      ((count++))  # Increment count for skipped directories
+      continue
+    fi
     if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
       cd "$directory"
       bannerColor "Checking $directory" "blue" "*"
