@@ -38,7 +38,7 @@ fn_update() {
   if [[ $FROM ]];then
     bannerColor "Starting from index $FROM" "blue" "*"
   fi
-  exit
+
   bannerColor "Use -h or --help for help. " "blue" "*"
 
   count=0
