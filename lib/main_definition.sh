@@ -17,9 +17,9 @@ parser_definition() {
 
     $SCRIPT_NAME update .
 
-    - Use -v param to install a certain Svelte next version.
+    - Use -n or --next number to install a certain Svelte next version.
 
-    $SCRIPT_NAME update -v 120 .
+    $SCRIPT_NAME update -n 120 .
 
     - Use -p flag to NOT to run pnpm update:
 
@@ -30,6 +30,9 @@ parser_definition() {
 
     - Use -t flag to NOT to run pnpm test:integration:
     $SCRIPT_NAME update -t .
+
+    - Use -f or --from number to start from a certain index:
+    $SCRIPT_NAME update -f 2 .
 
     - To display version: 
     $SCRIPT_NAME --version

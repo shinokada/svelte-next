@@ -38,7 +38,7 @@ fn_update() {
   if [[ $FROM ]];then
     bannerColor "Starting from index $FROM" "blue" "*"
   fi
-  
+  exit
   bannerColor "Use -h or --help for help. " "blue" "*"
 
   count=0
@@ -88,7 +88,7 @@ fn_update() {
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           bannerColor "Running git commands ..." "magenta" "*"
-          git add -A && git commit --message "Update Svelte to $svelte_version" && git push origin "$(git_current_branch)"
+          git add -A && git commit --message "Update Svelte to $svelte_version" && git push origin $(git branch --show-current)
           bannerColor "Git commands completed" "green" "*"
         else
           bannerColor "Skipping git commands" "yellow" "*"
