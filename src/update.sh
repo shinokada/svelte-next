@@ -8,8 +8,7 @@ fn_update() {
     bannerColor 'Error: Please provide the target directory.' "red" "*"
     exit 1
   fi
-echo "target_dir: $target_dir"
-exit
+
   svelte_version="next"
 
   if [[ "$SVELTE_NEXT" ]];then
