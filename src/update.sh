@@ -3,12 +3,13 @@ fn_update() {
   bannerColor 'Welcome to svelte-next update.' "blue" "*"
 
   if [[ $# -gt 0  ]];then
-    target_dir="$1"
+    target_dir=$(realpath "$1")
   else
     bannerColor 'Error: Please provide the target directory.' "red" "*"
     exit 1
   fi
-
+echo "target_dir: $target_dir"
+exit
   svelte_version="next"
 
   if [[ "$SVELTE_NEXT" ]];then
