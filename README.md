@@ -66,6 +66,9 @@ svelte-next update -g .
 # Use -t flag to NOT to run pnpm test:integration:
 svelte-next update -t .
 
+# Use -f <number> for starting index of subdirectory:
+svelte-next update -f 3
+
 # Combine the flags
 svelte-next update -pg .
 svelte-next update -pst .
@@ -85,6 +88,7 @@ svelte-next -h | --help
 -p: Skip running pnpm update.
 -t: Skip running pnpm test:integration.
 -g: Skip running git commands.
+-f: Use -f for starting index of subdirectory
 ```
 
 ## Note:
