@@ -48,8 +48,11 @@ awesome install shinokada/svelte-next
 ```sh
 # Install the latest and run pnpm update, 
 # pnpm test:integration and git add, commit, and push 
-# if it is a git repo in subdirectories of the current directory.
+# if it is a git repo in subdirectories of the CURRENT directory.
 svelte-next update .
+
+# run the script in the ./Runes directory
+svelte-next update ./Runes
 
 # Use -v param to install a certain Svelte next version.
 svelte-next update -v 120 .
