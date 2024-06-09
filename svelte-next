@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Title:         svelte-next
 # Description:   This script update Svelte version
@@ -6,7 +6,7 @@
 # Date:          2024-05-01
 
 set -eu
-VERSION="0.4.2"
+VERSION="0.4.3"
 SCRIPT_NAME=$(basename "$0")
 
 # Keep readlinkf function
@@ -42,8 +42,8 @@ readlinkf() {
 
 self=$(readlinkf "$0")
 script_dir=${self%/*}
-# For Debian APT remove line 7 to 38 and use the following line to
-# define the script_dir
+
+# For Debian APT remove the above readlinkf and script_dir and use the following line to define the script_dir
 # script_dir="/usr/share/shellscript_template"
 
 # Import files
