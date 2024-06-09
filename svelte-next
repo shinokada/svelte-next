@@ -75,6 +75,7 @@ eval "set -- $REST"
 # Check dependencies of your script
 check_cmd pnpm
 check_cmd git
+check_cmd jq
 # check_cmd you_dont_have_it
 
 # Add more commands.

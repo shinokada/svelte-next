@@ -15,6 +15,7 @@ This script automates updating Svelte versions (specifically targeting next vers
 
 - pnpm package manager
 - git
+- jq
 
 ## Installation
 
