@@ -87,8 +87,10 @@ fn_update() {
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
+          # get the new next version installed
+          new_version=$(pnpm list svelte --depth=0 | tail -n 1)
           bannerColor "Running git commands ..." "magenta" "*"
-          git add -A && git commit --message "Update Svelte to $svelte_version" && git push origin $(git branch --show-current)
+          git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
           bannerColor "Git commands completed" "green" "*"
         else
           bannerColor "Skipping git commands" "yellow" "*"
