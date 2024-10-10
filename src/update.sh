@@ -1,7 +1,5 @@
 fn_update() {
 
-  bannerColor 'Welcome to svelte-next update.' "blue" "*"
-
   if [[ $# -gt 0  ]];then
     target_dir=$(realpath "$1")
   else
@@ -22,6 +20,7 @@ fn_update() {
   fi
 
   messages=()
+  messages+=("Welcome to svelte-next update.")
 
   messages+=("This script will run the following tasks:")
 
@@ -51,7 +50,7 @@ fn_update() {
   formatted_message=$(printf "%s\n" "${messages[@]}")
 
   # Output all messages at once using bannerColor
-  newBannerColor "$formatted_message" "blue" "*"
+  newBannerColor "$formatted_message" "blue" "*" 30
 
   count=0
   for directory in "$target_dir"/* ; do

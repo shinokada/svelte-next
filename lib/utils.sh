@@ -161,6 +161,7 @@ function bannerColor() {
 }
 
 
+# Usage: bannerColor "my title" "blue" "*" [border_width]
 function newBannerColor() {
     case ${2} in
     black)
@@ -202,7 +203,7 @@ function newBannerColor() {
     tput setaf ${color}
     tput bold
     echo "${border}"
-    echo "${1}" | sed "s/^/${3} /" | sed "s/$/ ${3}/"
+    echo "${1}"  # Print the message as-is, without adding border characters
     echo "${border}"
     tput sgr 0
     echo
