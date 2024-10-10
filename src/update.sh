@@ -20,9 +20,9 @@ fn_update() {
   fi
 
   messages=()
-  messages+=("Welcome to svelte-next update.")
-
+  messages+=("Welcome to svelte-next update. Use -h or --help for help.")
   messages+=("This script will run the following tasks:")
+  messages+=("")
 
   if [[ $FLAG_P == 1 ]]; then
       messages+=("- pnpm update")
@@ -44,13 +44,11 @@ fn_update() {
       messages+=("- Starting from index $FROM")
   fi
 
-   messages+=("Use -h or --help for help.")
-
   # Join all messages with newlines
   formatted_message=$(printf "%s\n" "${messages[@]}")
 
   # Output all messages at once using bannerColor
-  newBannerColor "$formatted_message" "blue" "*" 30
+  newBannerColor "$formatted_message" "blue" "*" 50
 
   count=0
   for directory in "$target_dir"/* ; do
@@ -121,7 +119,7 @@ fn_update() {
   QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.[0].content + " - " + .[0].author')
 
   if [[ -n "$QUOTE" ]]; then
-    bannerColor "$QUOTE" "blue" "*" 
+    newBannerColor "$QUOTE" "blue" "*" 30
   fi
 
 
