@@ -21,25 +21,37 @@ fn_update() {
     exit 1
   fi
 
-  bannerColor "This script will run the following tasks:" "blue" "*"
+  messages=()
 
-  if [[ $FLAG_P == 1 ]];then
-    bannerColor "pnpm update" "blue" "*"
-  fi
-  if [[ $FLAG_S == 1 ]];then
-    bannerColor "pnpm i -D svelte@$svelte_version" "blue" "*"
-  fi
-  if [[ $FLAG_T == 1 ]];then
-    bannerColor "pnpm test:integration" "blue" "*"
-  fi
-  if [[ $FLAG_G == 1 ]];then
-    bannerColor "git add, commit, and push" "blue" "*"
-  fi
-  if [[ $FROM ]];then
-    bannerColor "Starting from index $FROM" "blue" "*"
+  messages+=("This script will run the following tasks:")
+
+  if [[ $FLAG_P == 1 ]]; then
+      messages+=("- pnpm update")
   fi
 
-  bannerColor "Use -h or --help for help. " "blue" "*"
+  if [[ $FLAG_S == 1 ]]; then
+      messages+=("- pnpm i -D svelte@$svelte_version")
+  fi
+
+  if [[ $FLAG_T == 1 ]]; then
+      messages+=("- pnpm test:integration")
+  fi
+
+  if [[ $FLAG_G == 1 ]]; then
+      messages+=("- git add, commit, and push")
+  fi
+
+  if [[ $FROM ]]; then
+      messages+=("- Starting from index $FROM")
+  fi
+
+   messages+=("Use -h or --help for help.")
+
+  # Join all messages with newlines
+  formatted_message=$(printf "%s\n" "${messages[@]}")
+
+  # Output all messages at once using bannerColor
+  bannerColor "$formatted_message" "blue" "*"
 
   count=0
   for directory in "$target_dir"/* ; do
@@ -106,7 +118,8 @@ fn_update() {
   done
 
   bannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
-  QUOTE=$(curl -s https://api.quotable.io/quotes/random | jq -r '.[0].content + " - " + .[0].author')
+  # https://api.quotable.io/quotes/random is down right now
+  QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.[0].content + " - " + .[0].author')
 
   if [[ -n "$QUOTE" ]]; then
     bannerColor "$QUOTE" "blue" "*" 
