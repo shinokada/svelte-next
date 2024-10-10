@@ -51,7 +51,7 @@ fn_update() {
   formatted_message=$(printf "%s\n" "${messages[@]}")
 
   # Output all messages at once using bannerColor
-  bannerColor "$formatted_message" "blue" "*"
+  newBannerColor "$formatted_message" "blue" "*"
 
   count=0
   for directory in "$target_dir"/* ; do

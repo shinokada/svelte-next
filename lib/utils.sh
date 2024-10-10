@@ -159,3 +159,51 @@ function bannerColor() {
     tput sgr 0
     echo
 }
+
+
+function newBannerColor() {
+    case ${2} in
+    black)
+        color=0
+        ;;
+    red)
+        color=1
+        ;;
+    green)
+        color=2
+        ;;
+    yellow)
+        color=3
+        ;;
+    blue)
+        color=4
+        ;;
+    magenta)
+        color=5
+        ;;
+    cyan)
+        color=6
+        ;;
+    white)
+        color=7
+        ;;
+    *)
+        echo "color is not set"
+        exit 1
+        ;;
+    esac
+
+    # Set border width to 4th argument if provided, otherwise default to 10
+    border_width=${4:-10}
+    
+    # Create border string with specified width
+    border=$(printf "%0.s${3}" $(seq 1 $border_width))
+    
+    tput setaf ${color}
+    tput bold
+    echo "${border}"
+    echo "${1}" | sed "s/^/${3} /" | sed "s/$/ ${3}/"
+    echo "${border}"
+    tput sgr 0
+    echo
+}
