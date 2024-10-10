@@ -119,6 +119,7 @@ fn_update() {
   QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.[0].content + " - " + .[0].author')
 
   if [[ -n "$QUOTE" ]]; then
+    echo "Here's a quote:"
     newBannerColor "$QUOTE" "blue" "*" 30
   fi
 
@@ -129,7 +130,7 @@ fn_update() {
   # # Check if joke extraction was successful (non-empty string)
   # if [[ -n "$joke_text" ]]; then
   #   # Echo the joke
-  #   echo "Here's your joke:"
+  #   echo "Here's a programming joke:"
   #   echo "$joke_text"
   # fi
 }
