@@ -48,7 +48,7 @@ fn_update() {
   formatted_message=$(printf "%s\n" "${messages[@]}")
 
   # Output all messages at once using bannerColor
-  newBannerColor "$formatted_message" "blue" "*" 50
+  newBannerColor "$formatted_message" "blue" "*"
 
   count=0
   for directory in "$target_dir"/* ; do
@@ -58,63 +58,63 @@ fn_update() {
     fi
     if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
       cd "$directory"
-      bannerColor "Checking $directory" "blue" "*"
+      newBannerColor "Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
-      bannerColor "Your current Svelte version is: $current_version" "green" "*"
+      newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
 
         if [[ $FLAG_P == 1 ]];then
-          bannerColor "Running pnpm update in $directory ..." "magenta" "*"
+          newBannerColor "Running pnpm update in $directory ..." "magenta" "*" 
           pnpm update
-          bannerColor "pnpm update completed" "green" "*"
+          newBannerColor "pnpm update completed" "green" "*" 
         else
-          bannerColor "Skipping git pnpm update." "yellow" "*"
+          newBannerColor "Skipping git pnpm update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
           if [[ "$svelte_version" == "next" ]];then
-            bannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+            newBannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@next
-            bannerColor "pnpm i -D svelte@next completed" "green" "*"
+            newBannerColor "pnpm i -D svelte@next completed" "green" "*"
           else
-            bannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
+            newBannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@"5.0.0-next.$svelte_version"
-            bannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
+            newBannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
           fi
         else
-          bannerColor "Skipping updating svelte." "yellow" "*"
+          newBannerColor "Skipping updating svelte." "yellow" "*"
         fi
 
         if [[ $FLAG_T == 1 ]];then
-          bannerColor "Running pnpm test:integration ..." "magenta" "*"
+          newBannerColor "Running pnpm test:integration ..." "magenta" "*"
           pnpm test:integration
-          bannerColor "pnpm test:integration completed" "green" "*"
+          newBannerColor "pnpm test:integration completed" "green" "*"
         else
-          bannerColor "Skipping pnpm test:integration." "yellow" "*"
+          newBannerColor "Skipping pnpm test:integration." "yellow" "*"
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           # get the new next version installed
           new_version=$(pnpm list svelte --depth=0 | tail -n 1)
-          bannerColor "Running git commands ..." "magenta" "*"
+          newBannerColor "Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
-          bannerColor "Git commands completed" "green" "*"
+          newBannerColor "Git commands completed" "green" "*"
         else
-          bannerColor "Skipping git commands" "yellow" "*"
+          newBannerColor "Skipping git commands" "yellow" "*"
         fi
 
       else
-        bannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
+        newBannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
       fi
       cd ..
     else
-      bannerColor "The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*"
+      newBannerColor "The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*" 50
     fi
   done
 
-  bannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
+  newBannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
   
 
   # https://api.quotable.io/quotes/random is down right now
