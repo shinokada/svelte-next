@@ -124,7 +124,7 @@ fn_update() {
 
   if [[ -n "$QUOTE" ]]; then
     echo "Here's a quote:"
-    newBannerColor "$QUOTE" "blue" "*" 30
+    newBannerColor "$QUOTE" "green" "*"
   fi
 
   # joke_json=$(curl -H "Accept: application/json" https://icanhazdadjoke.com/)
