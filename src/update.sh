@@ -115,16 +115,19 @@ fn_update() {
   done
 
   bannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
+  
+
   # https://api.quotable.io/quotes/random is down right now
-  QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.[0].content + " - " + .[0].author')
+  # QUOTE=$(curl -s https://api.quotable.io/quotes/random | jq -r '.[0].content + " - " + .[0].author')
+  # At https://quoteslate.vercel.app/api/quotes/randomhe, the JSON output is a single object, not an array
+  QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.quote + " - " + .author')
 
   if [[ -n "$QUOTE" ]]; then
     echo "Here's a quote:"
     newBannerColor "$QUOTE" "blue" "*" 30
   fi
 
-
-  # joke_json=$(curl -s https://v2.jokeapi.dev/joke/Programming,Misc?blacklistFlags=nsfw,sexist&type=single)
+  # joke_json=$(curl -H "Accept: application/json" https://icanhazdadjoke.com/)
   # joke_text=$(echo "$joke_json" | jq -r '.joke')
 
   # # Check if joke extraction was successful (non-empty string)
