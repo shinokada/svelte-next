@@ -61,7 +61,7 @@ fn_update() {
       newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
-      newBannerColor "🚀 Your current Svelte version is: $current_version" "green" "*"
+      newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
 
@@ -70,7 +70,7 @@ fn_update() {
           pnpm update
           newBannerColor "👍 pnpm update completed" "green" "*" 
         else
-          newBannerColor "⏭️ Skipping git pnpm update." "yellow" "*"
+          newBannerColor "⏭️  Skipping git pnpm update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
@@ -84,7 +84,7 @@ fn_update() {
             newBannerColor "🚀 pnpm i -D svelte@$svelte_version completed" "green" "*"
           fi
         else
-          newBannerColor "⏭️ Skipping updating svelte." "yellow" "*"
+          newBannerColor "⏭️  Skipping updating svelte." "yellow" "*"
         fi
 
         if [[ $FLAG_T == 1 ]];then
@@ -92,7 +92,7 @@ fn_update() {
           pnpm test:integration
           newBannerColor "🚀 pnpm test:integration completed" "green" "*"
         else
-          newBannerColor "⏭️ Skipping pnpm test:integration." "yellow" "*"
+          newBannerColor "⏭️  Skipping pnpm test:integration." "yellow" "*"
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
@@ -102,7 +102,7 @@ fn_update() {
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
           newBannerColor "🚀 Git commands completed" "green" "*"
         else
-          newBannerColor "⏭️ Skipping git commands" "yellow" "*"
+          newBannerColor "⏭️  Skipping git commands" "yellow" "*"
         fi
 
       else
