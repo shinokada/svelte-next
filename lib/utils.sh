@@ -208,3 +208,49 @@ function newBannerColor() {
     tput sgr 0
     echo
 }
+
+# Array of emoji Unicode codes
+emojis=(
+    "\U1F921"  # 🤡 clown face
+    "\U1F479"  # 👹 ogre
+    "\U1F47A"  # 👺 goblin
+    "\U1F47B"  # 👻 ghost
+    "\U1F47D"  # 👽 alien
+    "\U1F47E"  # 👾 alien monster
+    "\U1F916"  # 🤖 robot
+    "\U1F348"  # 🍈 melon
+    "\U1F349"  # 🍉 watermelon
+    "\U1F34A"  # 🍊 tangerine
+    "\U1F34B"  # 🍋 lemon
+    "\U1F34C"  # 🍌 banana
+    "\U1F34D"  # 🍍 pineapple
+    "\U1F96D"  # 🥭 mango
+    "\U1F34E"  # 🍎 red apple
+    "\U1F34F"  # 🍏 green apple
+    "\U1F350"  # 🍐 pear
+    "\U1F351"  # 🍑 peach
+    "\U1F352"  # 🍒 cherries
+    "\U1F353"  # 🍓 strawberry
+    "\U1F433"  # 🐳 whale
+    "\U1F419"  # 🐙 octopus
+    "\U1F98B"  # 🦋 butterfly
+    "\U1F439"  # 🐹 hamster
+    "\U1F431"  # 🐱 cat
+    "\U1F436"  # 🐶 dog
+    "\U1F680"  # 🚀 rocket
+    "\U1F525"  # 🔥 fire
+    "\U1F355"  # 🍕 pizza
+    "\U1F354"  # 🍔 hamburger
+    "\U1F338"  # 🌸 cherry
+    "\U1F339"  # 🌹 rose
+    "\U1F33A"  # 🌺 hibiscus
+    "\U1F33B"  # 🌻 sunflower
+    "\U1F33C"  # 🌼 blossom
+    "\U1F337"  # 🌷 tulip
+    "\U1F331"  # 🌱 seedling
+    "\U1F332"  # 🌲 evergreen tree
+    "\U1F333"  # 🌳 deciduous tree
+)
+
+# Get a random emoji from the array
+random_emoji=${emojis[$RANDOM % ${#emojis[@]}]}
