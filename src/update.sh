@@ -61,12 +61,12 @@ fn_update() {
       newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
-      newBannerColor "$random_emoji Your current Svelte version is: $current_version" "green" "*"
+      newBannerColor "🚀 Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
 
         if [[ $FLAG_P == 1 ]];then
-          newBannerColor "🛠️ Running pnpm update in $directory ..." "magenta" "*" 
+          newBannerColor "🔄 Running pnpm update in $directory ..." "magenta" "*" 
           pnpm update
           newBannerColor "👍 pnpm update completed" "green" "*" 
         else
