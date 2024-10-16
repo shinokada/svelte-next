@@ -20,28 +20,28 @@ fn_update() {
   fi
 
   messages=()
-  messages+=("Welcome to svelte-next update. Use -h or --help for help.")
+  messages+=("🚀 Welcome to svelte-next update. Use -h or --help for help.")
   messages+=("This script will run the following tasks:")
   messages+=("")
 
   if [[ $FLAG_P == 1 ]]; then
-      messages+=("- pnpm update")
+      messages+=("⚡ pnpm update")
   fi
 
   if [[ $FLAG_S == 1 ]]; then
-      messages+=("- pnpm i -D svelte@$svelte_version")
+      messages+=("⚡ pnpm i -D svelte@$svelte_version")
   fi
 
   if [[ $FLAG_T == 1 ]]; then
-      messages+=("- pnpm test:integration")
+      messages+=("⚡ pnpm test:integration")
   fi
 
   if [[ $FLAG_G == 1 ]]; then
-      messages+=("- git add, commit, and push")
+      messages+=("⚡ git add, commit, and push")
   fi
 
   if [[ $FROM ]]; then
-      messages+=("- Starting from index $FROM")
+      messages+=("⚡ Starting from index $FROM")
   fi
 
   # Join all messages with newlines
@@ -58,63 +58,63 @@ fn_update() {
     fi
     if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
       cd "$directory"
-      newBannerColor "Checking $directory" "blue" "*"
+      newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
-      newBannerColor "Your current Svelte version is: $current_version" "green" "*"
+      newBannerColor "$random_emoji Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ "next" ]]; then
 
         if [[ $FLAG_P == 1 ]];then
-          newBannerColor "Running pnpm update in $directory ..." "magenta" "*" 
+          newBannerColor "🛠️ Running pnpm update in $directory ..." "magenta" "*" 
           pnpm update
-          newBannerColor "pnpm update completed" "green" "*" 
+          newBannerColor "👍 pnpm update completed" "green" "*" 
         else
-          newBannerColor "Skipping git pnpm update." "yellow" "*"
+          newBannerColor "⏭️ Skipping git pnpm update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
           if [[ "$svelte_version" == "next" ]];then
-            newBannerColor "Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+            newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@next
-            newBannerColor "pnpm i -D svelte@next completed" "green" "*"
+            newBannerColor "🚀 pnpm i -D svelte@next completed" "green" "*"
           else
-            newBannerColor "Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
+            newBannerColor "🏃 Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@"5.0.0-next.$svelte_version"
-            newBannerColor "pnpm i -D svelte@$svelte_version completed" "green" "*"
+            newBannerColor "🚀 pnpm i -D svelte@$svelte_version completed" "green" "*"
           fi
         else
-          newBannerColor "Skipping updating svelte." "yellow" "*"
+          newBannerColor "⏭️ Skipping updating svelte." "yellow" "*"
         fi
 
         if [[ $FLAG_T == 1 ]];then
-          newBannerColor "Running pnpm test:integration ..." "magenta" "*"
+          newBannerColor "🏃 Running pnpm test:integration ..." "magenta" "*"
           pnpm test:integration
-          newBannerColor "pnpm test:integration completed" "green" "*"
+          newBannerColor "🚀 pnpm test:integration completed" "green" "*"
         else
-          newBannerColor "Skipping pnpm test:integration." "yellow" "*"
+          newBannerColor "⏭️ Skipping pnpm test:integration." "yellow" "*"
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           # get the new next version installed
           new_version=$(pnpm list svelte --depth=0 | tail -n 1)
-          newBannerColor "Running git commands ..." "magenta" "*"
+          newBannerColor "🏃 Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
-          newBannerColor "Git commands completed" "green" "*"
+          newBannerColor "🚀 Git commands completed" "green" "*"
         else
-          newBannerColor "Skipping git commands" "yellow" "*"
+          newBannerColor "⏭️ Skipping git commands" "yellow" "*"
         fi
 
       else
-        newBannerColor  "Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
+        newBannerColor  "😥 Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
       fi
       cd ..
     else
-      newBannerColor "The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*" 50
+      newBannerColor "😥 The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*" 50
     fi
   done
 
-  newBannerColor "Whew! Finally done. I'm outta here." "blue" "*" 
+  newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
 
 
   # https://api.quotable.io/quotes/random is down right now
