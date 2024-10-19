@@ -23,6 +23,8 @@ fn_update() {
   dir_count=$(find "$target_dir" -maxdepth 1 -type d | wc -l)
   dir_count=$((dir_count - 1))  # Subtract 1 to exclude the target directory itself
 
+  newBannerColor "Total directories found: $dir_count" "blue" "*"
+
   # Check if the number of directories is less than or equal to FROM
   if [[ -n $FROM ]] && (( dir_count <= FROM )); then
     bannerColor "Error: The number of directories ($dir_count) is less than or equal to the FROM value ($FROM)." "red" "*"
@@ -68,9 +70,11 @@ fn_update() {
       ((count++))  # Increment count for skipped directories
       continue
     fi
-    echo "Processing directory: $directory"
+    
+    newBannerColor "Processing directory: $directory" "green" "*"
+
     if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
-      cd "$directory"
+      cd "$directory" || exit
       newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
