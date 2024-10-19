@@ -67,8 +67,11 @@ fn_update() {
   # Output all messages at once using bannerColor
   newBannerColor "$formatted_message" "blue" "*"
 
-  count=0
-  for directory in "$target_dir"/* ; do
+  # count=0
+  cd "$target_dir" || exit
+  directories=($(ls -d */))
+  for ((i=FROM; i<${#directories[@]}; i++)); do
+  # for directory in "$target_dir"/* ; do
 
     newBannerColor "Processing item: $directory" "green" "*"
   
