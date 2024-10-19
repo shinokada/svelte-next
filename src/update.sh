@@ -9,15 +9,15 @@ fn_update() {
 
   svelte_version="latest"
 
-  if [[ "$SVELTE_NEXT" ]];then
+  if [[ "$SVELTE_NEXT" ]]; then
     svelte_version="$SVELTE_NEXT"
   fi
 
   # Debug output
-  if [[ "$DEBUG" == 1 ]];then
+  # if [[ $FLAG_P == 1 ]]; then
+  if [[ $DEBUG == 1 ]]; then
     echo "Debug: FROM=$FROM"
     echo "Debug: target_dir=$target_dir"
-
   fi
 
   # Check if the target directory exists and is a directory

@@ -2,7 +2,6 @@ parser_definition_svelte() {
     # from https://github.com/ko1nksm/getoptions/blob/master/examples/basic.sh
     setup REST plus:true help:usage abbr:true -- \
         "Usage: ${2##*/} [options...] [arguments...]" ''
-    msg -- 'getoptions basic example' ''
     msg -- 'Options:'
     flag DEBAG -d +d --{no-}flag-d on:0 no:1 init:@no -- "Use -d to run in debug mode"
     flag FLAG_P -p +p --{no-}flag-p on:0 no:1 init:@no -- "Use -p not to run pnpm update"
