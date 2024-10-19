@@ -71,24 +71,16 @@ fn_update() {
   cd "$target_dir" || exit
   directories=($(ls -d */))
   for ((i=FROM; i<${#directories[@]}; i++)); do
-  # for directory in "$target_dir"/* ; do
-    cd "$target_dir/${directories[$i]}" || exit
-    newBannerColor "Processing item: $directories[$i]" "green" "*"
-  
-    # if [[ -n $FROM ]] && (( $i < FROM )); then
-    #   echo "Skipping directory: $directories[$i] (count: $i, FROM: $FROM)"
-    #   ((count++))
-    #   continue
-    # fi
-
-    bannerColor "Processing directory: $directories[$i]" "green" "*"
+    cd "$target_dir/${directories}" || exit
+    current_dir_name=$(basename "$(pwd)")
+    newBannerColor "Processing item: $current_dir_name" "green" "*"
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
-    if [[ -f "$directories[$i]/package.json" ]] && grep -q '"svelte":' "$directory/package.json"; then
+    if [[ -f "$current_dir_name/package.json" ]] && grep -q '"svelte":' "$current_dir_name/package.json"; then
 
       # cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
 
-      newBannerColor "🚀 Checking $directories[$i]" "blue" "*"
+      newBannerColor "🚀 Checking $current_dir_name" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
@@ -96,7 +88,7 @@ fn_update() {
       if [[ "$current_version" =~ "next" ]]; then
 
         if [[ $FLAG_P == 1 ]];then
-          newBannerColor "🔄 Running pnpm update in $directories[$i] ..." "magenta" "*" 
+          newBannerColor "🔄 Running pnpm update in $current_dir_name ..." "magenta" "*" 
           pnpm update
           newBannerColor "👍 pnpm update completed" "green" "*" 
         else
@@ -136,13 +128,13 @@ fn_update() {
         fi
 
       else
-        newBannerColor  "Skipping $directories[$i]: No package.json or no Svelte dependency" "yellow" "*"
+        newBannerColor  "Skipping $current_dir_name: No package.json or no Svelte dependency" "yellow" "*"
       fi
       cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
-      newBannerColor "😥 Skipping $directories[$i]: No package.json or no Svelte dependency" "red" "*" 50
+      newBannerColor "😥 Skipping $current_dir_name: No package.json or no Svelte dependency" "red" "*" 50
     fi
-    echo "Debug: Finished processing $directories[$i]. Moving to next."
+    echo "Debug: Finished processing $current_dir_name. Moving to next."
   done
 
   newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
