@@ -72,7 +72,7 @@ fn_update() {
   directories=($(ls -d */))
   for ((i=FROM; i<${#directories[@]}; i++)); do
   # for directory in "$target_dir"/* ; do
-    cd "${directories[$i]}" || exit
+    cd "$target_dir/${directories[$i]}" || exit
     newBannerColor "Processing item: $directories[$i]" "green" "*"
   
     # if [[ -n $FROM ]] && (( $i < FROM )); then
