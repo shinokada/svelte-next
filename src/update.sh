@@ -60,8 +60,8 @@ fn_update() {
   fi
 
   if [[ $FROM ]]; then
-      FROM=$((FROM))
-      messages+=("⚡ Starting from index $FROM")
+    FROM=$((FROM))
+    messages+=("⚡ Starting from index $FROM")
   fi
 
   # Join all messages with newlines
@@ -74,7 +74,7 @@ fn_update() {
   cd "$target_dir" || exit
   directories=($(ls -d */))
 
-  if [[ "$DEBUG" ]];then
+  if [[ $DEBUG == 1 ]];then
     for ((i=0; i<${#directories[@]}; i++)); do
       echo "Index $i: ${directories[i]}"
     done
@@ -141,7 +141,7 @@ fn_update() {
       else
         newBannerColor  "Skipping $current_dir_name: No package.json or no Svelte dependency" "yellow" "*"
       fi
-      cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
+      # cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
       newBannerColor "😥 Skipping $current_dir_name: No package.json or no Svelte dependency" "red" "*" 50
     fi
