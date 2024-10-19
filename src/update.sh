@@ -144,8 +144,6 @@ fn_update() {
     else
       newBannerColor "😥 Skipping $directory: No package.json or no Svelte dependency" "red" "*" 50
     fi
-
-    ((count++))
     echo "Debug: Finished processing $directory. Moving to next."
   done
 
