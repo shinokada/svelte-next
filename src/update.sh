@@ -31,8 +31,8 @@ fn_update() {
 
   # Check if FROM is set and valid
   if [[ -n $FROM ]] && (( FROM >= dir_count )); then
-    bannerColor "Error: FROM value ($FROM) is greater than or equal to the number of directories ($dir_count)." "red" "*"
-    bannerColor "Please choose a FROM value less than $dir_count." "yellow" "*"
+    newBannerColor "Error: FROM value ($FROM) is greater than or equal to the number of directories ($dir_count)." "red" "*"
+    newBannerColor "Please choose a FROM value less than $dir_count." "yellow" "*"
     exit 1
   fi
 
@@ -88,7 +88,8 @@ fn_update() {
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
     if [[ -f "$directory/package.json" ]] && grep -q '"svelte":' "$directory/package.json"; then
 
-      cd "$directory" || exit
+      cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
+
       newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
@@ -139,9 +140,9 @@ fn_update() {
       else
         newBannerColor  "Skipping $directory: No package.json or no Svelte dependency" "yellow" "*"
       fi
-      cd .. || exit
+      cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
-      newBannerColor "😥 The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*" 50
+      newBannerColor "😥 Skipping $directory: No package.json or no Svelte dependency" "red" "*" 50
     fi
 
     ((count++))
