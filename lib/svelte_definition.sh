@@ -4,6 +4,7 @@ parser_definition_svelte() {
         "Usage: ${2##*/} [options...] [arguments...]" ''
     msg -- 'getoptions basic example' ''
     msg -- 'Options:'
+    flag DEBAG -d +d --{no-}flag-d on:0 no:1 init:@no -- "Use -d to run in debug mode"
     flag FLAG_P -p +p --{no-}flag-p on:0 no:1 init:@no -- "Use -p not to run pnpm update"
     flag FLAG_S -s +s --{no-}flag-s on:0 no:1 init:@no -- "Use -s not to run pnpm i -D svelte@next"
     flag FLAG_T -t +t --{no-}flag-t on:0 no:1 init:@no -- "Use -t not to run pnpm test:integration"

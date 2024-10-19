@@ -7,15 +7,18 @@ fn_update() {
     exit 1
   fi
 
-  svelte_version="next"
+  svelte_version="latest"
 
   if [[ "$SVELTE_NEXT" ]];then
     svelte_version="$SVELTE_NEXT"
   fi
 
   # Debug output
-  echo "Debug: FROM=$FROM"
-  echo "Debug: target_dir=$target_dir"
+  if [[ "$DEBUG" ]];then
+    echo "Debug: FROM=$FROM"
+    echo "Debug: target_dir=$target_dir"
+
+  fi
 
   # Check if the target directory exists and is a directory
   if ! [ -d "$target_dir" ]; then
@@ -58,6 +61,7 @@ fn_update() {
   fi
 
   if [[ $FROM ]]; then
+      FROM=$((FROM))
       messages+=("⚡ Starting from index $FROM")
   fi
 
@@ -70,6 +74,14 @@ fn_update() {
   # count=0
   cd "$target_dir" || exit
   directories=($(ls -d */))
+
+  if [[ "$DEBUG" ]];then
+    for ((i=0; i<${#directories[@]}; i++)); do
+      echo "Index $i: ${directories[i]}"
+    done
+    echo "Debug: Loop starting from index $FROM"
+  fi
+
   for ((i=FROM; i<${#directories[@]}; i++)); do
     cd "$target_dir/${directories}" || exit
     current_dir_name=$(basename "$(pwd)")
@@ -96,13 +108,13 @@ fn_update() {
         fi
         
         if [[ $FLAG_S == 1 ]];then
-          if [[ "$svelte_version" == "next" ]];then
+          if [[ "$svelte_version" == "latest" ]];then
             newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-            pnpm i -D svelte@next
+            pnpm i -D svelte@latest
             newBannerColor "🚀 pnpm i -D svelte@next completed" "green" "*"
           else
-            newBannerColor "🏃 Running pnpm i -D svelte@5.0.0-next.$svelte_version ..." "magenta" "*"
-            pnpm i -D svelte@"5.0.0-next.$svelte_version"
+            newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
+            pnpm i -D svelte@"$svelte_version"
             newBannerColor "🚀 pnpm i -D svelte@$svelte_version completed" "green" "*"
           fi
         else
@@ -134,7 +146,7 @@ fn_update() {
     else
       newBannerColor "😥 Skipping $current_dir_name: No package.json or no Svelte dependency" "red" "*" 50
     fi
-    echo "Debug: Finished processing $current_dir_name. Moving to next."
+    newBannerColor "Debug: Finished processing $current_dir_name. Moving to next." "green" "*"
   done
 
   newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
