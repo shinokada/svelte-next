@@ -70,15 +70,10 @@ fn_update() {
   count=0
   for directory in "$target_dir"/* ; do
 
-    echo "Debug: Processing item: $directory"
-    
-    if [[ ! -d "$directory" ]]; then
-      echo "Debug: Skipping non-directory: $directory"
-      continue  # Skip if not a directory
-    fi
+    newBannerColor "Processing item: $directory" "green" "*"
   
     if [[ -n $FROM ]] && (( count < FROM )); then
-      bannerColor "Skipping directory: $directory (count: $count, FROM: $FROM)" "yellow" "*"
+      echo "Skipping directory: $directory (count: $count, FROM: $FROM)"
       ((count++))
       continue
     fi
@@ -102,7 +97,7 @@ fn_update() {
           pnpm update
           newBannerColor "👍 pnpm update completed" "green" "*" 
         else
-          newBannerColor "⏭️  Skipping git pnpm update." "yellow" "*"
+          newBannerColor "⏭️  Skipping pnpm update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
