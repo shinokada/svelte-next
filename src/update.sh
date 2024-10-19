@@ -75,13 +75,13 @@ fn_update() {
     cd "${directories[$i]}" || exit
     newBannerColor "Processing item: $directories[$i]" "green" "*"
   
-    if [[ -n $FROM ]] && (( count < FROM )); then
-      echo "Skipping directory: $directories[$i] (count: $count, FROM: $FROM)"
-      ((count++))
-      continue
-    fi
+    # if [[ -n $FROM ]] && (( $i < FROM )); then
+    #   echo "Skipping directory: $directories[$i] (count: $i, FROM: $FROM)"
+    #   ((count++))
+    #   continue
+    # fi
 
-    bannerColor "Processing directory: $directories[$i] (count: $count)" "green" "*"
+    bannerColor "Processing directory: $directories[$i]" "green" "*"
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
     if [[ -f "$directories[$i]/package.json" ]] && grep -q '"svelte":' "$directory/package.json"; then
