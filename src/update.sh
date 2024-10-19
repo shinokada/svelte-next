@@ -82,7 +82,7 @@ fn_update() {
   fi
 
   for ((i=FROM; i<${#directories[@]}; i++)); do
-    cd "$target_dir/${directories}" || exit
+    cd "$target_dir/${directories[$i]}" || exit
     current_dir_name=$(basename "$(pwd)")
     newBannerColor "Processing item: $current_dir_name" "green" "*"
     
