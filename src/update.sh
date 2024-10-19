@@ -141,7 +141,7 @@ fn_update() {
       else
         newBannerColor  "Skipping $current_dir_name: No package.json or no Svelte dependency" "yellow" "*"
       fi
-      # cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
+      cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
       newBannerColor "😥 Skipping $current_dir_name: No package.json or no Svelte dependency" "red" "*" 50
     fi
