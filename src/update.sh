@@ -13,6 +13,10 @@ fn_update() {
     svelte_version="$SVELTE_NEXT"
   fi
 
+  # Debug output
+  echo "Debug: FROM=$FROM"
+  echo "Debug: target_dir=$target_dir"
+
   # Check if the target directory exists and is a directory
   if ! [ -d "$target_dir" ]; then
     bannerColor "Error: Target directory $target_dir does not exist or is not a directory." "red" "*"
@@ -25,9 +29,9 @@ fn_update() {
 
   newBannerColor "Total directories found: $dir_count" "blue" "*"
 
-  # Check if the number of directories is less than or equal to FROM
-  if [[ -n $FROM ]] && (( dir_count <= FROM )); then
-    bannerColor "Error: The number of directories ($dir_count) is less than or equal to the FROM value ($FROM)." "red" "*"
+  # Check if FROM is set and valid
+  if [[ -n $FROM ]] && (( FROM >= dir_count )); then
+    bannerColor "Error: FROM value ($FROM) is greater than or equal to the number of directories ($dir_count)." "red" "*"
     bannerColor "Please choose a FROM value less than $dir_count." "yellow" "*"
     exit 1
   fi
@@ -65,15 +69,25 @@ fn_update() {
 
   count=0
   for directory in "$target_dir"/* ; do
-    if [[ $FROM -ge 1 ]] && (( count < FROM )); then
-      echo "Skipping directory: $directory"
-      ((count++))  # Increment count for skipped directories
+
+    echo "Debug: Processing item: $directory"
+    
+    if [[ ! -d "$directory" ]]; then
+      echo "Debug: Skipping non-directory: $directory"
+      continue  # Skip if not a directory
+    fi
+  
+    if [[ -n $FROM ]] && (( count < FROM )); then
+      bannerColor "Skipping directory: $directory (count: $count, FROM: $FROM)" "yellow" "*"
+      ((count++))
       continue
     fi
-    
-    newBannerColor "Processing directory: $directory" "green" "*"
 
-    if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
+    bannerColor "Processing directory: $directory (count: $count)" "green" "*"
+    
+    # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
+    if [[ -f "$directory/package.json" ]] && grep -q '"svelte":' "$directory/package.json"; then
+
       cd "$directory" || exit
       newBannerColor "🚀 Checking $directory" "blue" "*"
       # Get current Svelte version
@@ -123,12 +137,15 @@ fn_update() {
         fi
 
       else
-        newBannerColor  "😥 Your subdirectory $directory does not have Svelte version. (Not updating)." "yellow" "*"
+        newBannerColor  "Skipping $directory: No package.json or no Svelte dependency" "yellow" "*"
       fi
-      cd ..
+      cd .. || exit
     else
       newBannerColor "😥 The directory $directory either doesn't exist, doesn't have a package.json, or Svelte isn't mentioned." "red" "*" 50
     fi
+
+    ((count++))
+    echo "Debug: Finished processing $directory. Moving to next."
   done
 
   newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
