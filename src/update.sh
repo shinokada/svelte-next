@@ -14,7 +14,7 @@ fn_update() {
   fi
 
   # Debug output
-  if [[ "$DEBUG" ]];then
+  if [[ "$DEBUG" == 1 ]];then
     echo "Debug: FROM=$FROM"
     echo "Debug: target_dir=$target_dir"
 
