@@ -88,7 +88,7 @@ fn_update() {
   for ((i=FROM; i<${#directories[@]}; i++)); do
     cd "$target_dir/${directories[$i]}" || exit
     current_dir_name=$(basename "$(pwd)")
-    newBannerColor "Processing item: $current_dir_name" "green" "*"
+    newBannerColor "Started processing $current_dir_name" "green" "*"
     
     if [[ $DEBUG == 1 ]]; then
       echo ""
