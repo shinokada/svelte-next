@@ -87,7 +87,7 @@ fn_update() {
     newBannerColor "Processing item: $current_dir_name" "green" "*"
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
-    if [[ -f "package.json" ]] && grep -q '"svelte":' "package.json"; then
+    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
 
       # cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
 
