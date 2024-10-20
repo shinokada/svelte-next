@@ -87,6 +87,20 @@ fn_update() {
     newBannerColor "Processing item: $current_dir_name" "green" "*"
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
+    if [[ $DEBUG == 1 ]]; then
+      echo "$target_dir/$current_dir_name"
+      if [[ -f "$target_dir/$current_dir_name/package.json" ]] then
+        echo "Debug: $target_dir/$current_dir_name/package.json exists."
+      else
+        echo "Debug: $target_dir/$current_dir_name/package.json does not exist."
+      fi
+      if grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
+        echo "Debug: $target_dir/$current_dir_name/package.json contains 'svelte'."
+      else
+        echo "Debug: $target_dir/$current_dir_name/package.json does not contain 'svelte'."
+      fi
+    fi
+
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
     
       # cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
@@ -97,7 +111,7 @@ fn_update() {
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ ^5\.(0\.0-next\.[0-9]+|[0-9]+\.[0-9]+)$ ]]; then
-      
+
         if [[ $DEBUG == 1 ]]; then
           echo "Debug: Working on $current_dir_name"
         fi
