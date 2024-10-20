@@ -9,7 +9,7 @@ parser_definition_svelte() {
     flag FLAG_G -g +g --{no-}flag-t on:0 no:1 init:@no -- "Use -g not to run git add, commit, and push"
     flag DEBUG -d +d --{no-}flag-d on:1 no:0 init:@no -- "Use -d to run in debug mode"
     param FROM -f --from --number validate:number init:=0 -- "Use -f for starting index of subdirectory"
-    param SVELTE_NEXT -n --next validate:number -- "Svelte 5 version number"
+    param SVELTE_NEXT -n --next -- "Svelte 5 version number"
     disp :usage -h --help
 }
 
