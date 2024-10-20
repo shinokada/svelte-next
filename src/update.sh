@@ -90,10 +90,9 @@ fn_update() {
     current_dir_name=$(basename "$(pwd)")
     newBannerColor "Processing item: $current_dir_name" "green" "*"
     
-    # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
     if [[ $DEBUG == 1 ]]; then
       echo ""
-      echo "$target_dir/$current_dir_name"
+      echo "Debug: Checking $target_dir/$current_dir_name"
       if [[ -f "$target_dir/$current_dir_name/package.json" ]] then
         echo "Debug: $target_dir/$current_dir_name/package.json exists."
       else
@@ -108,8 +107,6 @@ fn_update() {
     fi
 
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
-    
-      # cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
 
       newBannerColor "🚀 Checking $current_dir_name" "blue" "*"
       # Get current Svelte version
