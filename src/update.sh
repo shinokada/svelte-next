@@ -108,17 +108,22 @@ fn_update() {
       newBannerColor "🚀 Checking $current_dir_name" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
+      version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
+
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ $DEBUG == 1 ]]; then
-        if [[ "$current_version" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Debug: Full version string: '$current_version'"
+        echo "Debug: Extracted version number: '$version_number'"
+
+      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
           echo "Debug: $current_version is a valid Svelte version"
         else
           echo "Debug: $current_version is not a valid Svelte version"
         fi
       fi
 
-      if [[ "$current_version" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
 
         if [[ $DEBUG == 1 ]]; then
           echo "Debug: Working on $current_dir_name"
