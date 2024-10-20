@@ -88,7 +88,7 @@ fn_update() {
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
-
+    
       # cd "$directory" || { echo "Failed to change to directory $directory"; exit 1; }
 
       newBannerColor "🚀 Checking $current_dir_name" "blue" "*"
@@ -97,6 +97,10 @@ fn_update() {
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ "$current_version" =~ ^5\.(0\.0-next\.[0-9]+|[0-9]+\.[0-9]+)$ ]]; then
+      
+        if [[ $DEBUG == 1 ]]; then
+          echo "Debug: Working on $current_dir_name"
+        fi
 
         if [[ $FLAG_P == 1 ]];then
           newBannerColor "🔄 Running pnpm update in $current_dir_name ..." "magenta" "*" 
