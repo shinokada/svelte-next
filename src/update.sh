@@ -145,7 +145,7 @@ fn_update() {
     else
       newBannerColor "😥 Skipping $current_dir_name: No package.json or no Svelte dependency" "red" "*" 50
     fi
-    newBannerColor "Debug: Finished processing $current_dir_name. Moving to next." "green" "*"
+    newBannerColor "Finished processing $current_dir_name. Moving to next." "green" "*"
   done
 
   newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
