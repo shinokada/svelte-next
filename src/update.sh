@@ -96,7 +96,7 @@ fn_update() {
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
-      if [[ "$current_version" =~ "next" ]]; then
+      if [[ "$current_version" =~ ^5\.(0\.0-next\.[0-9]+|[0-9]+\.[0-9]+)$ ]]; then
 
         if [[ $FLAG_P == 1 ]];then
           newBannerColor "🔄 Running pnpm update in $current_dir_name ..." "magenta" "*" 
@@ -110,7 +110,7 @@ fn_update() {
           if [[ "$svelte_version" == "latest" ]];then
             newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@latest
-            newBannerColor "🚀 pnpm i -D svelte@next completed" "green" "*"
+            newBannerColor "🚀 pnpm i -D svelte@latest completed" "green" "*"
           else
             newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
             pnpm i -D svelte@"$svelte_version"
@@ -129,7 +129,7 @@ fn_update() {
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
-          # get the new next version installed
+          # get the current version installed
           new_version=$(pnpm list svelte --depth=0 | tail -n 1)
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
