@@ -2,14 +2,15 @@
 
 ## Automate Svelte Version Updates
 
-This script automates updating Svelte versions (specifically targeting next versions) in project directories.
+This script automates updating Svelte versions in project directories. If you have mutiple Svelte projects in subdirectories, this script will update them all.
 
 ## Features:
 
-- Updates Svelte to the specified version (defaults to "next").
-- Runs pnpm update, pnpm test:integration, and optionally git add, commit, and push.
+- Updates Svelte to the specified version (defaults to "latest").
+- Option to run `pnpm update`, `pnpm test:integration`, and git commands (`git add`, `git commit`, `git push`).
+- Option to run in a debug mode.
+- Option to start a certain index of project subdirectories.
 - Displays colored messages for informative progress.
-- Supports providing the target directory as a command-line argument.
 
 ## Requirements:
 
@@ -56,7 +57,7 @@ svelte-next update .
 svelte-next update ./Runes
 
 # Use -v param to install a certain Svelte next version.
-svelte-next update -v 120 .
+svelte-next update -v 5.x.x .
 
 # Use -p flag to NOT to run pnpm update:
 svelte-next update -p .
@@ -71,7 +72,10 @@ svelte-next update -g .
 svelte-next update -t .
 
 # Use -f <number> for starting index of subdirectory:
-svelte-next update -f 3
+svelte-next update -f 3 .
+
+# Use -d to run in debug mode:
+svelte-next update -d .
 
 # Combine the flags
 svelte-next update -pg .
@@ -84,15 +88,17 @@ svelte-next --version
 svelte-next -h | --help
 ```
 
-## Optional Flags:
+## Option list
 
 ```
--h or --help: Displays help message.
+-h --help: Displays help message.
 -s: Skip running updating svelte.
 -p: Skip running pnpm update.
 -t: Skip running pnpm test:integration.
 -g: Skip running git commands.
+-d: Run in debug mode.
 -f: Use -f for starting index of subdirectory
+-v --version: version
 ```
 
 ## Note:
