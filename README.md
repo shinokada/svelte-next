@@ -2,7 +2,7 @@
 
 ## Automate Svelte Version Updates
 
-This script automates updating Svelte versions in project directories. If you have mutiple Svelte projects in subdirectories, this script will update them all.
+This script automates updating Svelte versions in project directories. If you have multiple Svelte projects in subdirectories, this script will update them all.
 
 ## Features:
 
