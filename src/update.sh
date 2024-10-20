@@ -110,6 +110,14 @@ fn_update() {
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
+      if [[ $DEBUG == 1 ]]; then
+        if [[ "$current_version" =~ ^5\.(0\.0-next\.[0-9]+|[0-9]+\.[0-9]+)$ ]]; then
+          echo "Debug: $current_version is a valid Svelte version"
+        else
+          echo "Debug: $current_version is not a valid Svelte version"
+        fi
+      fi
+
       if [[ "$current_version" =~ ^5\.(0\.0-next\.[0-9]+|[0-9]+\.[0-9]+)$ ]]; then
 
         if [[ $DEBUG == 1 ]]; then
