@@ -15,8 +15,10 @@ fn_update() {
 
   # Debug output
   if [[ $DEBUG == 1 ]]; then
+    echo ""
     echo "Debug: FROM=$FROM"
     echo "Debug: target_dir=$target_dir"
+    echo ""
   fi
 
   # Check if the target directory exists and is a directory
@@ -75,10 +77,12 @@ fn_update() {
   directories=($(ls -d */))
 
   if [[ $DEBUG == 1 ]];then
+    echo ""
     for ((i=0; i<${#directories[@]}; i++)); do
       echo "Index $i: ${directories[i]}"
     done
     echo "Debug: Loop starting from index $FROM"
+    echo ""
   fi
 
   for ((i=FROM; i<${#directories[@]}; i++)); do
@@ -88,6 +92,7 @@ fn_update() {
     
     # if [[ -d "$directory" && -f "$directory/package.json" && $(grep -q '"svelte":' "$directory/package.json" && echo $? ) ]]; then
     if [[ $DEBUG == 1 ]]; then
+      echo ""
       echo "$target_dir/$current_dir_name"
       if [[ -f "$target_dir/$current_dir_name/package.json" ]] then
         echo "Debug: $target_dir/$current_dir_name/package.json exists."
@@ -99,6 +104,7 @@ fn_update() {
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not contain 'svelte'."
       fi
+      echo ""
     fi
 
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
@@ -113,6 +119,7 @@ fn_update() {
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ $DEBUG == 1 ]]; then
+        echo ""
         echo "Debug: Full version string: '$current_version'"
         echo "Debug: Extracted version number: '$version_number'"
 
@@ -121,12 +128,15 @@ fn_update() {
         else
           echo "Debug: $current_version is not a valid Svelte version"
         fi
+        echo ""
       fi
 
       if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
 
         if [[ $DEBUG == 1 ]]; then
+          echo ""
           echo "Debug: Working on $current_dir_name"
+          echo ""
         fi
 
         if [[ $FLAG_P == 1 ]];then
