@@ -107,8 +107,11 @@ fn_update() {
     fi
 
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
-
-      newBannerColor "🚀 Checking $current_dir_name" "blue" "*"
+      # Calculate current position (i + 1 since array is 0-based)
+      current_pos=$((i + 1))
+      # Get total number of directories
+      total_dirs=${#directories[@]}
+      newBannerColor "🚀 Checking $current_dir_name ($current_pos/$total_dirs)" "blue" "*"
       # Get current Svelte version
       current_version=$(pnpm list svelte --depth=0 | tail -n 1)
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
