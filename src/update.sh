@@ -54,7 +54,7 @@ fn_update() {
   fi
 
   if [[ $FLAG_T == 1 ]]; then
-      messages+=("⚡ pnpm test:integration")
+      messages+=("⚡ pnpm test:integration or test:e2e")
   fi
 
   if [[ $FLAG_G == 1 ]]; then
