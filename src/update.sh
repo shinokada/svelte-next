@@ -161,12 +161,21 @@ fn_update() {
           newBannerColor "⏭️  Skipping updating svelte." "yellow" "*"
         fi
 
-        if [[ $FLAG_T == 1 ]];then
-          newBannerColor "🏃 Running pnpm test:integration ..." "magenta" "*"
-          pnpm test:integration
-          newBannerColor "🚀 pnpm test:integration completed" "green" "*"
+        if [[ $FLAG_T == 1 ]]; then
+          # Check if package.json has "test:integration" or "test:e2e" scripts
+          if grep -q '"test:integration": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
+            newBannerColor "🏃 Running pnpm test:integration ..." "magenta" "*"
+            pnpm test:integration
+            newBannerColor "🚀 pnpm test:integration completed" "green" "*"
+          elif grep -q '"test:e2e": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
+            newBannerColor "🏃 Running pnpm test:e2e ..." "magenta" "*"
+            pnpm test:e2e
+            newBannerColor "🚀 pnpm test:e2e completed" "green" "*"
+          else
+            newBannerColor "⏭️  No compatible test script found in package.json." "yellow" "*"
+          fi
         else
-          newBannerColor "⏭️  Skipping pnpm test:integration." "yellow" "*"
+          newBannerColor "⏭️  Skipping test." "yellow" "*"
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
