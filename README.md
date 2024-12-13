@@ -7,7 +7,7 @@ This script automates updating Svelte versions in project directories. If you ha
 ## Features:
 
 - Updates Svelte to the specified version (defaults to "latest").
-- Option to run `pnpm update`, `pnpm test:integration`, and git commands (`git add`, `git commit`, `git push`).
+- Option to run `pnpm update`, `pnpm test:integration` or `test:e2e`, and git commands (`git add`, `git commit`, `git push`).
 - Option to run in a debug mode.
 - Option to start a certain index of project subdirectories.
 - Displays colored messages for informative progress.
