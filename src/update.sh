@@ -50,7 +50,7 @@ fn_update() {
   fi
 
   if [[ $FLAG_S == 1 ]]; then
-      messages+=('⚡ pnpm i -D svelte@"^$svelte_version"')
+      messages+=("⚡ pnpm i -D svelte@\"^$svelte_version\"")
   fi
 
   if [[ $FLAG_T == 1 ]]; then
