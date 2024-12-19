@@ -198,7 +198,7 @@ fn_update() {
     newBannerColor "Finished processing $current_dir_name. Moving to next." "green" "*"
   done
 
-  newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
+  # newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
 
 
   # https://api.quotable.io/quotes/random is down right now
@@ -207,7 +207,7 @@ fn_update() {
   QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.quote + " - " + .author')
 
   if [[ -n "$QUOTE" ]]; then
-    echo -e "Here's a quote for you $random_emoji"
+    echo -e "A dose of wisdom $random_emoji:"
     newBannerColor "$QUOTE" "green" "*"
   fi
 
