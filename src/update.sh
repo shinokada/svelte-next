@@ -110,33 +110,33 @@ fn_update() {
   run_pkg_cmd() {
     local cmd="$1"
     local pkg_manager="$2"
-    local args="$3"
+    local args="${3:-}"  # Make args optional with empty default
     
     case "$pkg_manager" in
       "bun")
         case "$cmd" in
-          "install") bun add $args ;;
+          "install") bun add ${args:-} ;;  # Use ${args:-} to handle empty args
           "update") bun update $args ;;
           "run") bun $args ;;
         esac
         ;;
       "pnpm")
         case "$cmd" in
-          "install") pnpm install $args ;;
+          "install") pnpm install ${args:-} ;;
           "update") pnpm update $args ;;
           "run") pnpm $args ;;
         esac
         ;;
       "yarn")
         case "$cmd" in
-          "install") yarn add $args ;;
+          "install") yarn add ${args:-} ;;
           "update") yarn upgrade $args ;;
           "run") yarn $args ;;
         esac
         ;;
       "npm")
         case "$cmd" in
-          "install") npm install $args ;;
+          "install") npm install ${args:-} ;;
           "update") npm update $args ;;
           "run") npm $args ;;
         esac
