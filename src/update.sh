@@ -46,15 +46,15 @@ fn_update() {
   messages+=("")
 
   if [[ $FLAG_P == 1 ]]; then
-      messages+=("⚡ pnpm update")
+      messages+=("⚡ Package manager update")
   fi
 
   if [[ $FLAG_S == 1 ]]; then
-      messages+=("⚡ pnpm i -D svelte@\"^$svelte_version\"")
+      messages+=("⚡ Install svelte@\"^$svelte_version\"")
   fi
 
   if [[ $FLAG_T == 1 ]]; then
-      messages+=("⚡ pnpm test:integration or test:e2e")
+      messages+=("⚡ Run integration/e2e tests")
   fi
 
   if [[ $FLAG_G == 1 ]]; then
@@ -72,9 +72,78 @@ fn_update() {
   # Output all messages at once using bannerColor
   newBannerColor "$formatted_message" "blue" "*"
 
-  # count=0
   cd "$target_dir" || exit
   directories=($(ls -d */))
+
+  # Function to detect package manager
+  detect_package_manager() {
+    local dir="$1"
+    if [[ -f "$dir/bun.lockb" ]]; then
+      echo "bun"
+    elif [[ -f "$dir/pnpm-lock.yaml" ]]; then
+      echo "pnpm"
+    elif [[ -f "$dir/yarn.lock" ]]; then
+      echo "yarn"
+    elif [[ -f "$dir/package-lock.json" ]]; then
+      echo "npm"
+    else
+      echo "pnpm"  # Default to pnpm if no lock file is found
+    fi
+  }
+
+  # Function to get package version
+  get_package_version() {
+    local pkg_manager="$1"
+    local package="$2"
+    
+    case "$pkg_manager" in
+      "bun")
+        bun pm ls "$package" | grep "$package" | awk '{print $2}'
+        ;;
+      "pnpm"|"yarn"|"npm")
+        "$pkg_manager" list "$package" --depth=0 | tail -n 1
+        ;;
+    esac
+  }
+
+  # Function to run package manager commands
+  run_pkg_cmd() {
+    local cmd="$1"
+    local pkg_manager="$2"
+    local args="$3"
+    
+    case "$pkg_manager" in
+      "bun")
+        case "$cmd" in
+          "install") bun add $args ;;
+          "update") bun update $args ;;
+          "run") bun $args ;;
+        esac
+        ;;
+      "pnpm")
+        case "$cmd" in
+          "install") pnpm install $args ;;
+          "update") pnpm update $args ;;
+          "run") pnpm $args ;;
+        esac
+        ;;
+      "yarn")
+        case "$cmd" in
+          "install") yarn add $args ;;
+          "update") yarn upgrade $args ;;
+          "run") yarn $args ;;
+        esac
+        ;;
+      "npm")
+        case "$cmd" in
+          "install") npm install $args ;;
+          "update") npm update $args ;;
+          "run") npm $args ;;
+        esac
+        ;;
+    esac
+  }
+
 
   if [[ $DEBUG == 1 ]];then
     echo ""
@@ -107,13 +176,17 @@ fn_update() {
     fi
 
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
+      # Detect package manager for current directory
+      pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
+
       # Calculate current position (i + 1 since array is 0-based)
       current_pos=$((i + 1))
       # Get total number of directories
       total_dirs=${#directories[@]}
-      newBannerColor "🚀 Checking $current_dir_name ($current_pos/$total_dirs)" "blue" "*"
+      newBannerColor "🚀 Checking $current_dir_name ($current_pos/$total_dirs) using $pkg_manager" "blue" "*"
+      
       # Get current Svelte version
-      current_version=$(pnpm list svelte --depth=0 | tail -n 1)
+      current_version=$(get_package_version "$pkg_manager" "svelte")
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
 
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
@@ -122,6 +195,7 @@ fn_update() {
         echo ""
         echo "Debug: Full version string: '$current_version'"
         echo "Debug: Extracted version number: '$version_number'"
+        echo "Debug: Using package manager: '$pkg_manager'"
 
       if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
           echo "Debug: $current_version is a valid Svelte version"
@@ -140,8 +214,8 @@ fn_update() {
         fi
 
         if [[ $FLAG_P == 1 ]];then
-          newBannerColor "🔄 Running pnpm update in $current_dir_name ..." "magenta" "*" 
-          pnpm update
+          newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*" 
+          run_pkg_cmd "update" "$pkg_manager"
           newBannerColor "👍 pnpm update completed" "green" "*" 
         else
           newBannerColor "⏭️  Skipping pnpm update." "yellow" "*"
@@ -149,14 +223,13 @@ fn_update() {
         
         if [[ $FLAG_S == 1 ]];then
           if [[ "$svelte_version" == "latest" ]];then
-            newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-            pnpm i -D svelte@latest
-            newBannerColor "🚀 pnpm i -D svelte@latest completed" "green" "*"
+            newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
+            run_pkg_cmd "install" "$pkg_manager" "-D svelte@latest"
           else
-            newBannerColor "🏃 Running pnpm i -D svelte@$svelte_version ..." "magenta" "*"
-            pnpm i -D svelte@"$svelte_version"
-            newBannerColor "🚀 pnpm i -D svelte@$svelte_version completed" "green" "*"
+            newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
+            run_pkg_cmd "install" "$pkg_manager" "-D svelte@$svelte_version"
           fi
+          newBannerColor "🚀 svelte installation completed" "green" "*"
         else
           newBannerColor "⏭️  Skipping updating svelte." "yellow" "*"
         fi
@@ -164,13 +237,13 @@ fn_update() {
         if [[ $FLAG_T == 1 ]]; then
           # Check if package.json has "test:integration" or "test:e2e" scripts
           if grep -q '"test:integration": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
-            newBannerColor "🏃 Running pnpm test:integration ..." "magenta" "*"
-            pnpm test:integration
-            newBannerColor "🚀 pnpm test:integration completed" "green" "*"
+            newBannerColor "🏃 Running test:integration ..." "magenta" "*"
+            run_pkg_cmd "run" "$pkg_manager" "test:integration"
+            newBannerColor "🚀 test:integration completed" "green" "*"
           elif grep -q '"test:e2e": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
-            newBannerColor "🏃 Running pnpm test:e2e ..." "magenta" "*"
-            pnpm test:e2e
-            newBannerColor "🚀 pnpm test:e2e completed" "green" "*"
+            newBannerColor "🏃 Running test:e2e ..." "magenta" "*"
+            run_pkg_cmd "run" "$pkg_manager" "test:e2e"
+            newBannerColor "🚀 test:e2e completed" "green" "*"
           else
             newBannerColor "⏭️  No compatible test script found in package.json." "yellow" "*"
           fi
@@ -180,7 +253,7 @@ fn_update() {
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           # get the current version installed
-          new_version=$(pnpm list svelte --depth=0 | tail -n 1)
+          new_version=$(get_package_version "$pkg_manager" "svelte")
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
           newBannerColor "🚀 Git commands completed" "green" "*"
