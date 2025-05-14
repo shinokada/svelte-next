@@ -277,12 +277,29 @@ fn_update() {
   # https://api.quotable.io/quotes/random is down right now
   # QUOTE=$(curl -s https://api.quotable.io/quotes/random | jq -r '.[0].content + " - " + .[0].author')
   # At https://quoteslate.vercel.app/api/quotes/randomhe, the JSON output is a single object, not an array
-  QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.quote + " - " + .author')
 
-  if [[ -n "$QUOTE" ]]; then
-    echo -e "A dose of wisdom $random_emoji:"
-    newBannerColor "$QUOTE" "green" "*"
+  # QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.quote + " - " + .author')
+
+  # if [[ -n "$QUOTE" ]]; then
+  #   echo -e "A dose of wisdom $random_emoji:"
+  #   newBannerColor "$QUOTE" "green" "*"
+  # fi
+
+  response=$(curl -s https://quoteslate.vercel.app/api/quotes/random)
+
+  # Optional: debug the raw response
+  if [[ $DEBUG == 1 ]]; then
+    echo "Raw API response: $response"
   fi
+
+  # Try parsing only if it's valid JSON
+  if echo "$response" | jq -e .quote > /dev/null 2>&1; then
+    QUOTE=$(echo "$response" | jq -r '.quote + " - " + .author')
+    newBannerColor "$QUOTE" "green" "*"
+  else
+    newBannerColor "⚠️ Failed to fetch a valid quote." "yellow" "*"
+  fi
+
 
   # joke_json=$(curl -H "Accept: application/json" https://icanhazdadjoke.com/)
   # joke_text=$(echo "$joke_json" | jq -r '.joke')
