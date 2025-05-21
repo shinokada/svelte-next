@@ -285,19 +285,20 @@ fn_update() {
   #   newBannerColor "$QUOTE" "green" "*"
   # fi
 
-  response=$(curl -s https://quoteslate.vercel.app/api/quotes/random)
+  response=$(curl -s -H "Accept: application/json" https://quoteslate.vercel.app/api/quotes/random)
 
   # Optional: debug the raw response
   if [[ $DEBUG == 1 ]]; then
-    echo "Raw API response: $response"
+  echo "Raw API response: $response"
   fi
 
-  # Try parsing only if it's valid JSON
-  if echo "$response" | jq -e .quote > /dev/null 2>&1; then
-    QUOTE=$(echo "$response" | jq -r '.quote + " - " + .author')
-    newBannerColor "$QUOTE" "green" "*"
+  # Try parsing only if it's valid JSON, with better error handling
+  if [[ -n "$response" ]] && echo "$response" | jq -e . > /dev/null 2>&1; then
+  QUOTE=$(echo "$response" | jq -r '.quote + " - " + .author')
+  newBannerColor "$QUOTE" "green" "*"
   else
-    newBannerColor "⚠️ Failed to fetch a valid quote." "yellow" "*"
+  echo "Error details: $(echo "$response" | jq -r 2>&1)" >&2
+  newBannerColor "⚠️ Failed to fetch a valid quote." "yellow" "*"
   fi
 
 
