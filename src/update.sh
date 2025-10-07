@@ -271,44 +271,61 @@ fn_update() {
     newBannerColor "Finished processing $current_dir_name. Moving to next." "green" "*"
   done
 
-  # newBannerColor "👍 Whew! Finally done. I'm outta here." "blue" "*" 
+  # Alternative API endpoints (try these if rate-limited)
+  APIS=(
+    "https://zenquotes.io/api/random"
+    "https://quoteslate.vercel.app/api/quotes/random"
+  )
 
+  fetch_quote() {
+    local api_url=$1
+    
+    response=$(curl -s -w "\n%{http_code}" \
+      -H "Accept: application/json" \
+      -H "User-Agent: Mozilla/5.0 (Bash Quote Fetcher)" \
+      --max-time 5 \
+      "$api_url")
+    
+    http_code=$(echo "$response" | tail -n1)
+    body=$(echo "$response" | sed '$d')
+    
+    if [[ $DEBUG == 1 ]]; then
+      echo "Trying: $api_url"
+      echo "HTTP Code: $http_code"
+    fi
+    
+    # Check for success
+    if [[ "$http_code" == "200" ]] && echo "$body" | jq -e . > /dev/null 2>&1; then
+      # Handle different API response formats
+      case "$api_url" in
+        *quotable.io*)
+          QUOTE=$(echo "$body" | jq -r '.content + " - " + .author')
+          ;;
+        *zenquotes.io*)
+          QUOTE=$(echo "$body" | jq -r '.[0].q + " - " + .[0].a')
+          ;;
+        *quoteslate*)
+          QUOTE=$(echo "$body" | jq -r '.quote + " - " + .author')
+          ;;
+      esac
+      
+      if [[ -n "$QUOTE" && "$QUOTE" != " - " ]]; then
+        return 0
+      fi
+    fi
+    
+    return 1
+  }
 
-  # https://api.quotable.io/quotes/random is down right now
-  # QUOTE=$(curl -s https://api.quotable.io/quotes/random | jq -r '.[0].content + " - " + .[0].author')
-  # At https://quoteslate.vercel.app/api/quotes/randomhe, the JSON output is a single object, not an array
+  # Try each API until one works
+  for api in "${APIS[@]}"; do
+    if fetch_quote "$api"; then
+      newBannerColor "$QUOTE" "green" "*"
+      exit 0
+    fi
+  done
 
-  # QUOTE=$(curl -s https://quoteslate.vercel.app/api/quotes/random | jq -r '.quote + " - " + .author')
-
-  # if [[ -n "$QUOTE" ]]; then
-  #   echo -e "A dose of wisdom $random_emoji:"
-  #   newBannerColor "$QUOTE" "green" "*"
-  # fi
-
-  response=$(curl -s -H "Accept: application/json" https://quoteslate.vercel.app/api/quotes/random)
-
-  # Optional: debug the raw response
-  if [[ $DEBUG == 1 ]]; then
-  echo "Raw API response: $response"
-  fi
-
-  # Try parsing only if it's valid JSON, with better error handling
-  if [[ -n "$response" ]] && echo "$response" | jq -e . > /dev/null 2>&1; then
-  QUOTE=$(echo "$response" | jq -r '.quote + " - " + .author')
-  newBannerColor "$QUOTE" "green" "*"
-  else
-  echo "Error details: $(echo "$response" | jq -r 2>&1)" >&2
-  newBannerColor "⚠️ Failed to fetch a valid quote." "yellow" "*"
-  fi
-
-
-  # joke_json=$(curl -H "Accept: application/json" https://icanhazdadjoke.com/)
-  # joke_text=$(echo "$joke_json" | jq -r '.joke')
-
-  # # Check if joke extraction was successful (non-empty string)
-  # if [[ -n "$joke_text" ]]; then
-  #   # Echo the joke
-  #   echo "Here's a programming joke:"
-  #   echo "$joke_text"
-  # fi
+  # All APIs failed
+  newBannerColor "⚠️ All quote APIs are unavailable (rate limited or down)" "yellow" "*"
+  exit 1
 }

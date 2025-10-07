@@ -6,7 +6,7 @@
 # Date:          2024-05-01
 
 set -eu
-VERSION="0.5.3"
+VERSION="0.5.4"
 SCRIPT_NAME=$(basename "$0")
 
 # Keep readlinkf function
@@ -92,14 +92,6 @@ if [ $# -gt 0 ]; then
         . "${script_dir}/src/update.sh"
         fn_update "$@"
         ;;
-    # cmd2)
-    #     eval "$(getoptions parser_definition_cmd2 parse "$0")"
-    #     parse "$@"
-    #     eval "set -- $REST"
-    #     # shellcheck disable=SC1091
-    #     . "${script_dir}/src/cmd2.sh"
-    #     fn_cmd2 "$@"
-    #     ;;
     --) ;; # no subcommand, arguments only
     esac
 fi
