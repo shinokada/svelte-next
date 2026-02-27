@@ -45,6 +45,10 @@ fn_update() {
   messages+=("This script will run the following tasks:")
   messages+=("")
 
+  if [[ $FLAG_L == 1 ]]; then
+      messages+=("⚡ Update all packages to latest (ignoring semver ranges)")
+  fi
+
   if [[ $FLAG_P == 1 ]]; then
       messages+=("⚡ Package manager update")
   fi
@@ -117,6 +121,7 @@ fn_update() {
         case "$cmd" in
           "install") bun add ${args:-} ;;  # Use ${args:-} to handle empty args
           "update") bun update $args ;;
+          "update-latest") bun update --latest ;;
           "run") bun $args ;;
         esac
         ;;
@@ -124,6 +129,7 @@ fn_update() {
         case "$cmd" in
           "install") pnpm install ${args:-} ;;
           "update") pnpm update $args ;;
+          "update-latest") pnpm up -L ;;
           "run") pnpm $args ;;
         esac
         ;;
@@ -131,6 +137,7 @@ fn_update() {
         case "$cmd" in
           "install") yarn add ${args:-} ;;
           "update") yarn upgrade $args ;;
+          "update-latest") yarn upgrade --latest ;;
           "run") yarn $args ;;
         esac
         ;;
@@ -138,6 +145,7 @@ fn_update() {
         case "$cmd" in
           "install") npm install ${args:-} ;;
           "update") npm update $args ;;
+          "update-latest") npx --yes npm-check-updates -u && npm install ;;
           "run") npm $args ;;
         esac
         ;;
@@ -211,6 +219,14 @@ fn_update() {
           echo ""
           echo "Debug: Working on $current_dir_name"
           echo ""
+        fi
+
+        if [[ $FLAG_L == 1 ]]; then
+          newBannerColor "🔄 Running update --latest in $current_dir_name using $pkg_manager ..." "magenta" "*"
+          run_pkg_cmd "update-latest" "$pkg_manager"
+          newBannerColor "👍 update --latest completed" "green" "*"
+        else
+          newBannerColor "⏭️  Skipping update --latest." "yellow" "*"
         fi
 
         if [[ $FLAG_P == 1 ]];then

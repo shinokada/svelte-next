@@ -19,6 +19,9 @@ parser_definition() {
     - Use -n or --next number to install a certain Svelte next version.
     $SCRIPT_NAME update -n 5.0.0 .
 
+    - Use -L or --latest to update all packages to their latest versions (ignores semver ranges):
+    $SCRIPT_NAME update -L .
+
     - Use -p flag to NOT to run pnpm update:
     $SCRIPT_NAME update -p .
 

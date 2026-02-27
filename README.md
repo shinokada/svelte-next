@@ -8,6 +8,7 @@ This script automates updating Svelte versions in project directories. If you ha
 
 - Automatic package manager detection (supports pnpm, npm, yarn, and bun)
 - Updates Svelte to the specified version (defaults to "latest")
+- Option to update all packages to their latest versions, ignoring semver ranges (`-L` / `--latest`)
 - Option to run package updates, integration/e2e tests, and git commands (`git add`, `git commit`, `git push`)
 - Option to run in a debug mode
 - Option to start at a certain index of project subdirectories
@@ -73,6 +74,9 @@ svelte-next update ./Runes
 # Use -v param to install a certain Svelte next version.
 svelte-next update -v 5.x.x .
 
+# Use -L or --latest to update all packages to their latest versions (ignores semver ranges):
+svelte-next update -L .
+
 # Use -p flag to NOT run package updates:
 svelte-next update -p .
 
@@ -106,6 +110,7 @@ svelte-next -h | --help
 
 ```
 -h --help: Displays help message.
+-L --latest: Update all packages to their latest versions (ignores semver ranges).
 -s: Skip running updating svelte.
 -p: Skip running package updates.
 -t: Skip running integration/e2e tests.
@@ -119,11 +124,14 @@ svelte-next -h | --help
 
 The script translates commands appropriately for each package manager:
 
-| Action  | pnpm         | npm         | yarn         | bun        |
-| ------- | ------------ | ----------- | ------------ | ---------- |
-| Install | pnpm install | npm install | yarn add     | bun add    |
-| Update  | pnpm update  | npm update  | yarn upgrade | bun update |
-| Run     | pnpm         | npm         | yarn         | bun        |
+| Action         | pnpm            | npm                                      | yarn                  | bun                  |
+| -------------- | --------------- | ---------------------------------------- | --------------------- | -------------------- |
+| Install        | pnpm install    | npm install                              | yarn add              | bun add              |
+| Update         | pnpm update     | npm update                               | yarn upgrade          | bun update           |
+| Update latest  | pnpm up -L      | npx npm-check-updates -u && npm install  | yarn upgrade --latest | bun update --latest  |
+| Run            | pnpm            | npm                                      | yarn                  | bun                  |
+
+> **Note for npm users:** The `--latest` flag uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) (`ncu`) since npm has no native equivalent. This will rewrite your `package.json` before reinstalling.
 
 ## Note:
 
