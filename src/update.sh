@@ -51,25 +51,27 @@ fn_update() {
       messages+=("⚡ Update all packages to latest (ignoring semver ranges)")
   fi
 
-  if [[ $FLAG_P != 0 ]]; then
+  if [[ $FLAG_L == 1 ]]; then
+      messages+=("⏭️  Skipping package manager update (-L takes precedence)")
+  elif [[ $FLAG_P != 0 ]]; then
       messages+=("⚡ Package manager update")
   else
       messages+=("⏭️  Skipping package manager update (-p)")
   fi
 
-  if [[ $FLAG_S != 0 ]]; then
+  if [[ $FLAG_S == 1 ]]; then
       messages+=("⚡ Install svelte@\"^$svelte_version\"")
   else
       messages+=("⏭️  Skipping svelte install (-s)")
   fi
 
-  if [[ $FLAG_T != 0 ]]; then
+  if [[ $FLAG_T == 1 ]]; then
       messages+=("⚡ Run integration/e2e tests")
   else
       messages+=("⏭️  Skipping tests (-t)")
   fi
 
-  if [[ $FLAG_G != 0 ]]; then
+  if [[ $FLAG_G == 1 ]]; then
       messages+=("⚡ git add, commit, and push")
   else
       messages+=("⏭️  Skipping git commands (-g)")
@@ -123,7 +125,9 @@ fn_update() {
   get_package_version() {
     local package_name="$1"
     local package_json="$2"
-    jq -r '(.dependencies["'"$package_name"'"] // .devDependencies["'"$package_name"'"]) | ltrimstr("^") | ltrimstr("~")' "$package_json"
+    local version
+    version=$(jq -r '(.dependencies["'"$package_name"'"] // .devDependencies["'"$package_name"'"]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
+    echo "${version:-}"
   }
 
   # Function to run package manager commands
@@ -153,7 +157,15 @@ fn_update() {
         case "$cmd" in
           "install") yarn add ${args:-} ;;
           "update") yarn upgrade $args ;;
-          "update-latest") yarn upgrade --latest ;;
+          "update-latest")
+            # Yarn Berry (v2+) uses 'yarn up' (upgrades to latest by default);
+            # Yarn Classic (v1) uses 'yarn upgrade --latest'.
+            if [[ -f ".yarnrc.yml" ]]; then
+              yarn up
+            else
+              yarn upgrade --latest
+            fi
+            ;;
           "run") yarn $args ;;
         esac
         ;;
