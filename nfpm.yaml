@@ -1,0 +1,22 @@
+name: svelte-next
+arch: ${NFPM_ARCH}
+platform: linux
+version: ${VERSION}
+maintainer: shinokada <shinokada@users.noreply.github.com>
+description: Automates updating Svelte versions in project directories
+homepage: https://github.com/shinokada/svelte-next
+license: MIT
+
+contents:
+  - src: ./svelte-next
+    dst: /usr/bin/svelte-next
+    file_info:
+      mode: 0755
+  - src: ./lib
+    dst: /usr/share/svelte-next/lib
+  - src: ./src
+    dst: /usr/share/svelte-next/src
+  - src: ./README.md
+    dst: /usr/share/doc/svelte-next/README.md
+  - src: ./LICENSE
+    dst: /usr/share/doc/svelte-next/LICENSE

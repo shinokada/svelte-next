@@ -4,47 +4,43 @@
 # Description:   This script update Svelte version
 # Author:        @shinokada
 # Date:          2024-05-01
+# Update:        2026-02-27
 
 set -eu
-VERSION="0.5.4"
+VERSION="0.6.0"
 SCRIPT_NAME=$(basename "$0")
 
-# Keep readlinkf function
-readlinkf() {
-    [ "${1:-}" ] || return 1
-    max_symlinks=40
-    CDPATH='' # to avoid changing to an unexpected directory
-
-    target=$1
-    [ -e "${target%/}" ] || target=${1%"${1##*[!/]}"} # trim trailing slashes
-    [ -d "${target:-/}" ] && target="$target/"
-
-    cd -P . 2>/dev/null || return 1
-    while [ "$max_symlinks" -ge 0 ] && max_symlinks=$((max_symlinks - 1)); do
-        if [ ! "$target" = "${target%/*}" ]; then
-            case $target in
-            /*) cd -P "${target%/*}/" 2>/dev/null || break ;;
-            *) cd -P "./${target%/*}" 2>/dev/null || break ;;
-            esac
-            target=${target##*/}
-        fi
-
-        if [ ! -L "$target" ]; then
-            target="${PWD%/}${target:+/}${target}"
-            printf '%s\n' "${target:-/}"
+# Locate the directory that contains lib/ and src/ by trying candidate
+# locations in priority order. This works correctly under every install
+# method (direct run, awesome, Homebrew libexec, deb/rpm) without any
+# hardcoded overrides or symlink resolution tricks.
+_find_script_dir() {
+    local candidates=(
+        # 1. Homebrew: set explicitly by the wrapper in the formula
+        "${SVELTE_NEXT_LIBEXEC:-}"
+        # 2. Direct run or awesome: support files sit next to the script itself
+        "$(cd -- "$(dirname -- "$0")" && pwd)"
+        # 3. deb/rpm: nfpm installs support files here
+        "/usr/share/svelte-next"
+        # 4. Fallback for manual installs that copy only the binary to /usr/local/bin
+        "/usr/local/share/svelte-next"
+    )
+    local dir
+    for dir in "${candidates[@]}"; do
+        if [[ -n "$dir" && -f "$dir/lib/getoptions.sh" ]]; then
+            printf '%s' "$dir"
             return 0
         fi
-        link=$(ls -dl -- "$target" 2>/dev/null) || break
-        target=${link#*" $target -> "}
     done
-    return 1
+    printf 'Error: cannot locate svelte-next support files.\n' >&2
+    printf 'Looked in:\n' >&2
+    for dir in "${candidates[@]}"; do
+        [[ -n "$dir" ]] && printf '  %s\n' "$dir" >&2
+    done
+    exit 1
 }
 
-self=$(readlinkf "$0")
-script_dir=${self%/*}
-
-# For Debian APT remove the above readlinkf and script_dir and use the following line to define the script_dir
-# script_dir="/usr/share/shellscript_template"
+script_dir=$(_find_script_dir)
 
 # Import files
 # shellcheck disable=SC1091
@@ -72,11 +68,9 @@ eval "set -- $REST"
 # If you are using Bash, check Bash version
 # check_bash 5
 
-# Check dependencies of your script
-check_cmd pnpm
+# Check dependencies always required regardless of package manager
 check_cmd git
 check_cmd jq
-# check_cmd you_dont_have_it
 
 # Add more commands.
 # Don't forget to add your command in lib/main_definition.sh

@@ -14,6 +14,32 @@ This script automates updating Svelte versions in project directories. If you ha
 - Option to start at a certain index of project subdirectories
 - Displays colored messages for informative progress
 
+## Windows Support
+
+`svelte-next` is a Bash script and does not run natively on Windows. Windows users have three options, in order of recommendation:
+
+### Option 1: WSL (Recommended)
+
+WSL (Windows Subsystem for Linux) runs a full Linux environment inside Windows and is the most compatible option. Install it once from PowerShell (run as Administrator):
+
+```powershell
+wsl --install
+```
+
+Restart your PC, then open the Ubuntu terminal and install `svelte-next` normally using the Homebrew or manual instructions below. Your Windows project files are accessible inside WSL at `/mnt/c/Users/YourName/...`.
+
+### Option 2: Git Bash
+
+If you already have [Git for Windows](https://git-scm.com/download/win) installed, Git Bash is available immediately — no extra setup needed. Open Git Bash and use the manual (curl or git clone) install methods below.
+
+> **Note:** Git Bash is missing `tput` and some GNU coreutils, so colored output will not display correctly. The script will still run, but expect some visual noise.
+
+### Option 3: Cygwin
+
+[Cygwin](https://www.cygwin.com/) provides a fuller Unix environment than Git Bash but is heavier to install. During Cygwin setup, make sure to select `bash`, `curl`, `git`, and `jq` packages.
+
+---
+
 ## Requirements:
 
 - One of the following package managers:
@@ -35,19 +61,34 @@ The script automatically detects which package manager to use based on the lock 
 
 ## Installation
 
-Install [awesome package manager](https://github.com/shinokada/awesome)
+### Homebrew (macOS and Linux)
+
+```sh
+brew tap shinokada/svelte-next
+brew install svelte-next
+```
+
+To upgrade to a newer version:
+
+```sh
+brew upgrade svelte-next
+```
+
+### awesome package manager
+
+Install [awesome](https://github.com/shinokada/awesome):
 
 ```sh
 curl -s https://raw.githubusercontent.com/shinokada/awesome/main/install | bash -s install
 ```
 
-Add the following to your terminal config file, such as .zshrc or .bashrc.
+Add the following to your terminal config file, such as `.zshrc` or `.bashrc`:
 
 ```sh
 export PATH=$HOME/.local/share/bin:$PATH
 ```
 
-Then source the config file or open a new terminal tab.
+Then source the config file or open a new terminal tab:
 
 ```sh
 # for example
@@ -58,6 +99,26 @@ Install `svelte-next`:
 
 ```sh
 awesome install shinokada/svelte-next
+```
+
+### Manual (curl)
+
+Download and install a specific version directly:
+
+```sh
+VERSION=v0.5.2
+curl -sL "https://github.com/shinokada/svelte-next/archive/refs/tags/${VERSION}.tar.gz" | tar xz
+sudo mv "svelte-next-${VERSION#v}/svelte-next" /usr/local/bin/svelte-next
+sudo chmod +x /usr/local/bin/svelte-next
+```
+
+### Manual (git clone)
+
+```sh
+git clone https://github.com/shinokada/svelte-next.git
+cd svelte-next
+sudo cp svelte-next /usr/local/bin/svelte-next
+sudo chmod +x /usr/local/bin/svelte-next
 ```
 
 ## Usage

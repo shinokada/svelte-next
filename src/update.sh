@@ -95,6 +95,15 @@ fn_update() {
     fi
   }
 
+  # Check that the detected package manager is actually installed
+  check_package_manager() {
+    local pkg_manager="$1"
+    if ! command -v "$pkg_manager" &>/dev/null; then
+      newBannerColor "Error: $pkg_manager is required for this project but is not installed." "red" "*"
+      exit 1
+    fi
+  }
+
   # Function to get package version
   get_package_version() {
     local pkg_manager="$1"
@@ -175,7 +184,7 @@ fn_update() {
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not exist."
       fi
-      if grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
+      if jq -e '.dependencies.svelte // .devDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
         echo "Debug: $target_dir/$current_dir_name/package.json contains 'svelte'."
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not contain 'svelte'."
@@ -183,9 +192,10 @@ fn_update() {
       echo ""
     fi
 
-    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
-      # Detect package manager for current directory
+    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
+      # Detect package manager for current directory and verify it is installed
       pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
+      check_package_manager "$pkg_manager"
 
       # Calculate current position (i + 1 since array is 0-based)
       current_pos=$((i + 1))
@@ -197,23 +207,27 @@ fn_update() {
       current_version=$(get_package_version "$pkg_manager" "svelte")
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
 
+      # Extract major version from package.json (works for Svelte 5, 6, 7 ...)
+      svelte_major=$(jq -r '(.dependencies.svelte // .devDependencies.svelte) | ltrimstr("^") | ltrimstr("~") | split(".")[0]' "$target_dir/$current_dir_name/package.json")
+
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
       if [[ $DEBUG == 1 ]]; then
         echo ""
         echo "Debug: Full version string: '$current_version'"
         echo "Debug: Extracted version number: '$version_number'"
+        echo "Debug: Svelte major version: '$svelte_major'"
         echo "Debug: Using package manager: '$pkg_manager'"
 
-      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Debug: $current_version is a valid Svelte version"
+        if [[ "$svelte_major" =~ ^[0-9]+$ ]] && (( svelte_major >= 5 )); then
+          echo "Debug: $current_version is a supported Svelte version (major >= 5)"
         else
-          echo "Debug: $current_version is not a valid Svelte version"
+          echo "Debug: $current_version is not a supported Svelte version (major < 5)"
         fi
         echo ""
       fi
 
-      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ "$svelte_major" =~ ^[0-9]+$ ]] && (( svelte_major >= 5 )); then
 
         if [[ $DEBUG == 1 ]]; then
           echo ""
@@ -278,7 +292,7 @@ fn_update() {
         fi
 
       else
-        newBannerColor  "Skipping $current_dir_name: No package.json or no Svelte dependency" "yellow" "*"
+        newBannerColor "Skipping $current_dir_name: Svelte major version ($svelte_major) is less than 5" "yellow" "*"
       fi
       cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
