@@ -126,7 +126,7 @@ fn_update() {
     local package_name="$1"
     local package_json="$2"
     local version
-    version=$(jq -r '(.dependencies["'"$package_name"'"] // .devDependencies["'"$package_name"'"]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
+    version=$(jq -r --arg pkg "$package_name" '(.dependencies[$pkg] // .devDependencies[$pkg]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
     echo "${version:-}"
   }
 
