@@ -45,28 +45,37 @@ fn_update() {
   messages+=("This script will run the following tasks:")
   messages+=("")
 
+  # FLAG_L=1 means -L was passed (run latest update)
+  # FLAG_P/S/T/G use inverted logic: 1=run (flag not passed), 0=skip (flag passed)
   if [[ $FLAG_L == 1 ]]; then
       messages+=("⚡ Update all packages to latest (ignoring semver ranges)")
   fi
 
-  if [[ $FLAG_P == 1 ]]; then
+  if [[ $FLAG_P != 0 ]]; then
       messages+=("⚡ Package manager update")
+  else
+      messages+=("⏭️  Skipping package manager update (-p)")
   fi
 
-  if [[ $FLAG_S == 1 ]]; then
+  if [[ $FLAG_S != 0 ]]; then
       messages+=("⚡ Install svelte@\"^$svelte_version\"")
+  else
+      messages+=("⏭️  Skipping svelte install (-s)")
   fi
 
-  if [[ $FLAG_T == 1 ]]; then
+  if [[ $FLAG_T != 0 ]]; then
       messages+=("⚡ Run integration/e2e tests")
+  else
+      messages+=("⏭️  Skipping tests (-t)")
   fi
 
-  if [[ $FLAG_G == 1 ]]; then
+  if [[ $FLAG_G != 0 ]]; then
       messages+=("⚡ git add, commit, and push")
+  else
+      messages+=("⏭️  Skipping git commands (-g)")
   fi
 
-  if [[ $FROM ]]; then
-    FROM=$((FROM))
+  if [[ $FROM -gt 0 ]]; then
     messages+=("⚡ Starting from index $FROM")
   fi
 
@@ -104,19 +113,12 @@ fn_update() {
     fi
   }
 
-  # Function to get package version
+  # Read the installed version directly from package.json using jq.
+  # This avoids shelling out to the package manager (which may hit the
+  # network or hang) just to read a version number we already have on disk.
   get_package_version() {
-    local pkg_manager="$1"
-    local package="$2"
-    
-    case "$pkg_manager" in
-      "bun")
-        bun pm ls "$package" | grep "$package" | awk '{print $2}'
-        ;;
-      "pnpm"|"yarn"|"npm")
-        "$pkg_manager" list "$package" --depth=0 | tail -n 1
-        ;;
-    esac
+    local package_json="$3"
+    jq -r '(.dependencies["'"$2"'"] // .devDependencies["'"$2"'"]) | ltrimstr("^") | ltrimstr("~")' "$package_json"
   }
 
   # Function to run package manager commands
@@ -203,12 +205,13 @@ fn_update() {
       total_dirs=${#directories[@]}
       newBannerColor "🚀 Checking $current_dir_name ($current_pos/$total_dirs) using $pkg_manager" "blue" "*"
       
-      # Get current Svelte version
-      current_version=$(get_package_version "$pkg_manager" "svelte")
+      # Get current Svelte version directly from package.json (no network call)
+      local pkg_json="$target_dir/$current_dir_name/package.json"
+      current_version=$(get_package_version "$pkg_manager" "svelte" "$pkg_json")
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
 
-      # Extract major version from package.json (works for Svelte 5, 6, 7 ...)
-      svelte_major=$(jq -r '(.dependencies.svelte // .devDependencies.svelte) | ltrimstr("^") | ltrimstr("~") | split(".")[0]' "$target_dir/$current_dir_name/package.json")
+      # Extract major version (works for Svelte 5, 6, 7 ...)
+      svelte_major=$(echo "$current_version" | cut -d'.' -f1)
 
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
@@ -282,8 +285,8 @@ fn_update() {
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
-          # get the current version installed
-          new_version=$(get_package_version "$pkg_manager" "svelte")
+          # get the post-update version from package.json
+          new_version=$(get_package_version "$pkg_manager" "svelte" "$pkg_json")
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
           newBannerColor "🚀 Git commands completed" "green" "*"

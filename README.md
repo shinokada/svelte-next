@@ -74,6 +74,34 @@ To upgrade to a newer version:
 brew upgrade svelte-next
 ```
 
+### Debian / Ubuntu (deb)
+
+Download the `.deb` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), then install:
+
+```sh
+# amd64
+sudo dpkg -i svelte-next_<version>_linux_amd64.deb
+
+# arm64
+sudo dpkg -i svelte-next_<version>_linux_arm64.deb
+```
+
+To upgrade, download the new `.deb` and run `dpkg -i` again.
+
+### Fedora / RHEL (rpm)
+
+Download the `.rpm` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), then install:
+
+```sh
+# amd64
+sudo rpm -i svelte-next_<version>_linux_amd64.rpm
+
+# arm64
+sudo rpm -i svelte-next_<version>_linux_arm64.rpm
+```
+
+To upgrade an existing install, replace `-i` with `-U`.
+
 ### awesome package manager
 
 Install [awesome](https://github.com/shinokada/awesome):
@@ -101,15 +129,24 @@ Install `svelte-next`:
 awesome install shinokada/svelte-next
 ```
 
-### Manual (curl)
+### Manual (tarball)
 
-Download and install a specific version directly:
+Download the tarball for your platform from the [releases page](https://github.com/shinokada/svelte-next/releases), then install:
 
 ```sh
-VERSION=v0.5.2
-curl -sL "https://github.com/shinokada/svelte-next/archive/refs/tags/${VERSION}.tar.gz" | tar xz
-sudo mv "svelte-next-${VERSION#v}/svelte-next" /usr/local/bin/svelte-next
+# Fetch the latest version number automatically
+VERSION=$(curl -s https://api.github.com/repos/shinokada/svelte-next/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | cut -c2-)
+PLATFORM=darwin_arm64  # darwin_amd64 | linux_amd64 | linux_arm64
+
+curl -sLO "https://github.com/shinokada/svelte-next/releases/download/v${VERSION}/svelte-next_${VERSION}_${PLATFORM}.tar.gz"
+tar -xzf "svelte-next_${VERSION}_${PLATFORM}.tar.gz"
+cd "svelte-next-${VERSION}"
+
+# Install binary and support files
+sudo cp svelte-next /usr/local/bin/svelte-next
 sudo chmod +x /usr/local/bin/svelte-next
+sudo mkdir -p /usr/local/share/svelte-next
+sudo cp -r lib src /usr/local/share/svelte-next/
 ```
 
 ### Manual (git clone)
@@ -119,7 +156,11 @@ git clone https://github.com/shinokada/svelte-next.git
 cd svelte-next
 sudo cp svelte-next /usr/local/bin/svelte-next
 sudo chmod +x /usr/local/bin/svelte-next
+sudo mkdir -p /usr/local/share/svelte-next
+sudo cp -r lib src /usr/local/share/svelte-next/
 ```
+
+> **Note:** The `git clone` method keeps `lib/` and `src/` next to the script in the cloned directory, so the manual `cp` to `/usr/local/share/svelte-next` is only needed if you move the binary to `/usr/local/bin`. If you run the script directly from the cloned directory (e.g. `./svelte-next`), no extra steps are needed.
 
 ## Usage
 
@@ -185,12 +226,12 @@ svelte-next -h | --help
 
 The script translates commands appropriately for each package manager:
 
-| Action         | pnpm            | npm                                      | yarn                  | bun                  |
-| -------------- | --------------- | ---------------------------------------- | --------------------- | -------------------- |
-| Install        | pnpm install    | npm install                              | yarn add              | bun add              |
-| Update         | pnpm update     | npm update                               | yarn upgrade          | bun update           |
-| Update latest  | pnpm up -L      | npx npm-check-updates -u && npm install  | yarn upgrade --latest | bun update --latest  |
-| Run            | pnpm            | npm                                      | yarn                  | bun                  |
+| Action        | pnpm         | npm                                     | yarn                  | bun                 |
+| ------------- | ------------ | --------------------------------------- | --------------------- | ------------------- |
+| Install       | pnpm install | npm install                             | yarn add              | bun add             |
+| Update        | pnpm update  | npm update                              | yarn upgrade          | bun update          |
+| Update latest | pnpm up -L   | npx npm-check-updates -u && npm install | yarn upgrade --latest | bun update --latest |
+| Run           | pnpm         | npm                                     | yarn                  | bun                 |
 
 > **Note for npm users:** The `--latest` flag uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) (`ncu`) since npm has no native equivalent. This will rewrite your `package.json` before reinstalling.
 
