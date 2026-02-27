@@ -111,14 +111,19 @@ fn_update() {
       newBannerColor "Error: $pkg_manager is required for this project but is not installed." "red" "*"
       exit 1
     fi
+    if [[ "$pkg_manager" == "npm" && $FLAG_L == 1 ]] && ! command -v npx &>/dev/null; then
+      newBannerColor "Error: npx is required for npm latest updates but is not installed." "red" "*"
+      exit 1
+    fi
   }
 
   # Read the installed version directly from package.json using jq.
   # This avoids shelling out to the package manager (which may hit the
   # network or hang) just to read a version number we already have on disk.
   get_package_version() {
-    local package_json="$3"
-    jq -r '(.dependencies["'"$2"'"] // .devDependencies["'"$2"'"]) | ltrimstr("^") | ltrimstr("~")' "$package_json"
+    local package_name="$1"
+    local package_json="$2"
+    jq -r '(.dependencies["'"$package_name"'"] // .devDependencies["'"$package_name"'"]) | ltrimstr("^") | ltrimstr("~")' "$package_json"
   }
 
   # Function to run package manager commands
@@ -207,7 +212,7 @@ fn_update() {
       
       # Get current Svelte version directly from package.json (no network call)
       local pkg_json="$target_dir/$current_dir_name/package.json"
-      current_version=$(get_package_version "$pkg_manager" "svelte" "$pkg_json")
+      current_version=$(get_package_version "svelte" "$pkg_json")
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
 
       # Extract major version (works for Svelte 5, 6, 7 ...)
@@ -242,16 +247,12 @@ fn_update() {
           newBannerColor "🔄 Running update --latest in $current_dir_name using $pkg_manager ..." "magenta" "*"
           run_pkg_cmd "update-latest" "$pkg_manager"
           newBannerColor "👍 update --latest completed" "green" "*"
-        else
-          newBannerColor "⏭️  Skipping update --latest." "yellow" "*"
-        fi
-
-        if [[ $FLAG_P == 1 ]];then
+        elif [[ $FLAG_P == 1 ]]; then
           newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*" 
           run_pkg_cmd "update" "$pkg_manager"
-          newBannerColor "👍 pnpm update completed" "green" "*" 
+          newBannerColor "👍 $pkg_manager update completed" "green" "*" 
         else
-          newBannerColor "⏭️  Skipping pnpm update." "yellow" "*"
+          newBannerColor "⏭️  Skipping package manager update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
@@ -286,7 +287,7 @@ fn_update() {
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
           # get the post-update version from package.json
-          new_version=$(get_package_version "$pkg_manager" "svelte" "$pkg_json")
+          new_version=$(get_package_version "svelte" "$pkg_json")
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
           git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
           newBannerColor "🚀 Git commands completed" "green" "*"

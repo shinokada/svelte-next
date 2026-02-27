@@ -16,7 +16,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Install nfpm
         run: |
@@ -52,7 +52,7 @@ jobs:
       - name: Generate checksums
         run: |
           cd dist
-          sha256sum *.tar.gz *.deb *.rpm > checksums.txt
+          sha256sum -- ./*.tar.gz ./*.deb ./*.rpm > checksums.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

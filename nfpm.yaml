@@ -6,6 +6,10 @@ maintainer: shinokada <shinokada@users.noreply.github.com>
 description: Automates updating Svelte versions in project directories
 homepage: https://github.com/shinokada/svelte-next
 license: MIT
+depends:
+  - bash
+  - git
+  - jq
 
 contents:
   - src: ./svelte-next
