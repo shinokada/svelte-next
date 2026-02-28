@@ -126,7 +126,7 @@ fn_update() {
     local package_name="$1"
     local package_json="$2"
     local version
-    version=$(jq -r --arg pkg "$package_name" '(.dependencies[$pkg] // .devDependencies[$pkg]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
+    version=$(jq -r --arg pkg "$package_name" '(.dependencies[$pkg] // .devDependencies[$pkg] // .peerDependencies[$pkg] // .optionalDependencies[$pkg]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
     echo "${version:-}"
   }
 
@@ -158,10 +158,12 @@ fn_update() {
           "install") yarn add ${args:-} ;;
           "update") yarn upgrade $args ;;
           "update-latest")
-            # Yarn Berry (v2+) uses 'yarn up' (upgrades to latest by default);
-            # Yarn Classic (v1) uses 'yarn upgrade --latest'.
-            if [[ -f ".yarnrc.yml" ]]; then
-              yarn up
+            # Detect Yarn major version: Berry (v2+) uses 'yarn up *';
+            # Classic (v1) uses 'yarn upgrade --latest'.
+            local yarn_major
+            yarn_major=$(yarn --version 2>/dev/null | cut -d'.' -f1)
+            if [[ "$yarn_major" =~ ^[0-9]+$ ]] && (( yarn_major >= 2 )); then
+              yarn up '*'
             else
               yarn upgrade --latest
             fi
@@ -203,7 +205,7 @@ fn_update() {
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not exist."
       fi
-      if jq -e '.dependencies.svelte // .devDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
+      if jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
         echo "Debug: $target_dir/$current_dir_name/package.json contains 'svelte'."
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not contain 'svelte'."
@@ -211,7 +213,7 @@ fn_update() {
       echo ""
     fi
 
-    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
+    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
       # Detect package manager for current directory and verify it is installed
       pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
       check_package_manager "$pkg_manager"
@@ -227,8 +229,8 @@ fn_update() {
       current_version=$(get_package_version "svelte" "$pkg_json")
       version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
 
-      # Extract major version (works for Svelte 5, 6, 7 ...)
-      svelte_major=$(echo "$current_version" | cut -d'.' -f1)
+      # Extract major version from the validated semver string (works for Svelte 5, 6, 7 ...)
+      svelte_major=$(echo "$version_number" | cut -d'.' -f1)
 
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
