@@ -27,11 +27,15 @@ fn_update() {
     exit 1
   fi
 
-  # Count the number of directories
-  dir_count=$(find "$target_dir" -maxdepth 1 -type d | wc -l)
-  dir_count=$((dir_count - 1))  # Subtract 1 to exclude the target directory itself
+  # Count only the directories that match the processing loop (non-hidden)
+  dir_count=$(find "$target_dir" -mindepth 1 -maxdepth 1 -type d ! -name '.*' | wc -l)
 
   newBannerColor "Total directories found: $dir_count" "blue" "*"
+
+  if ! command -v jq &>/dev/null; then
+    newBannerColor "Error: jq is required but is not installed." "red" "*"
+    exit 1
+  fi
 
   # Check if FROM is set and valid
   if [[ -n $FROM ]] && (( FROM >= dir_count )); then
@@ -77,7 +81,7 @@ fn_update() {
       messages+=("⏭️  Skipping git commands (-g)")
   fi
 
-  if [[ $FROM -gt 0 ]]; then
+  if [[ "${FROM:-0}" =~ ^[0-9]+$ ]] && (( FROM > 0 )); then
     messages+=("⚡ Starting from index $FROM")
   fi
 
@@ -230,10 +234,10 @@ fn_update() {
       # Get current Svelte version directly from package.json (no network call)
       local pkg_json="$target_dir/$current_dir_name/package.json"
       current_version=$(get_package_version "svelte" "$pkg_json")
-      version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
+      version_number=$(echo "$current_version" | grep -oE '[0-9]+([.][0-9]+){0,2}([.-][0-9A-Za-z.]+)?' | head -n1)
 
-      # Extract major version from the validated semver string (works for Svelte 5, 6, 7 ...)
-      svelte_major=$(echo "$version_number" | cut -d'.' -f1)
+      # Extract major version from broader valid ranges (e.g. ^5, 5.x, >=5, 5.0.0-next.1)
+      svelte_major=$(echo "$version_number" | grep -oE '^[0-9]+')
 
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
@@ -262,12 +266,22 @@ fn_update() {
 
         if [[ $FLAG_L == 1 ]]; then
           newBannerColor "🔄 Running update --latest in $current_dir_name using $pkg_manager ..." "magenta" "*"
-          run_pkg_cmd "update-latest" "$pkg_manager"
-          newBannerColor "👍 update --latest completed" "green" "*"
+          if run_pkg_cmd "update-latest" "$pkg_manager"; then
+            newBannerColor "👍 update --latest completed" "green" "*"
+          else
+            newBannerColor "❌ update --latest failed in $current_dir_name" "red" "*"
+            cd "$target_dir" || exit 1
+            continue
+          fi
         elif [[ $FLAG_P == 1 ]]; then
-          newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*" 
-          run_pkg_cmd "update" "$pkg_manager"
-          newBannerColor "👍 $pkg_manager update completed" "green" "*" 
+          newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*"
+          if run_pkg_cmd "update" "$pkg_manager"; then
+            newBannerColor "👍 $pkg_manager update completed" "green" "*"
+          else
+            newBannerColor "❌ $pkg_manager update failed in $current_dir_name" "red" "*"
+            cd "$target_dir" || exit 1
+            continue
+          fi
         else
           newBannerColor "⏭️  Skipping package manager update." "yellow" "*"
         fi
@@ -309,10 +323,11 @@ fn_update() {
           git add -A
           if git diff --cached --quiet; then
             newBannerColor "ℹ️  No changes to commit" "yellow" "*"
+          elif git commit --message "Update Svelte to $new_version" && git push origin "$(git branch --show-current)"; then
+            newBannerColor "🚀 Git commands completed" "green" "*"
           else
-            git commit --message "Update Svelte to $new_version" && git push origin "$(git branch --show-current)"
+            newBannerColor "❌ Git commit/push failed" "red" "*"
           fi
-          newBannerColor "🚀 Git commands completed" "green" "*"
         else
           newBannerColor "⏭️  Skipping git commands" "yellow" "*"
         fi
