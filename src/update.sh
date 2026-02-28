@@ -88,7 +88,10 @@ fn_update() {
   newBannerColor "$formatted_message" "blue" "*"
 
   cd "$target_dir" || exit
-  directories=($(ls -d */))
+  directories=()
+  for d in */; do
+    [[ -d "$d" ]] && directories+=("$d")
+  done
 
   # Function to detect package manager
   detect_package_manager() {
@@ -200,7 +203,7 @@ fn_update() {
     if [[ $DEBUG == 1 ]]; then
       echo ""
       echo "Debug: Checking $target_dir/$current_dir_name"
-      if [[ -f "$target_dir/$current_dir_name/package.json" ]] then
+      if [[ -f "$target_dir/$current_dir_name/package.json" ]]; then
         echo "Debug: $target_dir/$current_dir_name/package.json exists."
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not exist."
@@ -303,7 +306,12 @@ fn_update() {
           # get the post-update version from package.json
           new_version=$(get_package_version "svelte" "$pkg_json")
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
-          git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
+          git add -A
+          if git diff --cached --quiet; then
+            newBannerColor "ℹ️  No changes to commit" "yellow" "*"
+          else
+            git commit --message "Update Svelte to $new_version" && git push origin "$(git branch --show-current)"
+          fi
           newBannerColor "🚀 Git commands completed" "green" "*"
         else
           newBannerColor "⏭️  Skipping git commands" "yellow" "*"
@@ -375,5 +383,5 @@ fn_update() {
 
   # All APIs failed
   newBannerColor "⚠️ All quote APIs are unavailable (rate limited or down)" "yellow" "*"
-  exit 1
+  exit 0
 }
