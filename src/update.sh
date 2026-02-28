@@ -58,11 +58,7 @@ fn_update() {
   # FLAG_L=1 means -L was passed (run latest update)
   # FLAG_P/S/T/G use inverted logic: 1=run (flag not passed), 0=skip (flag passed)
   if [[ $FLAG_L == 1 ]]; then
-      messages+=("⚡ Update all packages to latest (ignoring semver ranges)")
-  fi
-
-  if [[ $FLAG_L == 1 ]]; then
-      messages+=("⚡ Running package manager latest update (-L takes precedence over regular update)")
+      messages+=("⚡ Update all packages to latest (ignoring semver ranges, -L takes precedence)")
   elif [[ $FLAG_P != 0 ]]; then
       messages+=("⚡ Package manager update")
   else
@@ -189,7 +185,7 @@ fn_update() {
         case "$cmd" in
           "install") npm install ${args:-} ;;
           "update") npm update $args ;;
-          "update-latest") npx --yes npm-check-updates -u && npm install ;;
+          "update-latest") npx --yes npm-check-updates -u && npm install || { echo "Warning: npm-check-updates modified package.json but npm install failed — manual intervention may be needed."; return 1; } ;;
           "run") npm $args ;;
         esac
         ;;
