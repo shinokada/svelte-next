@@ -185,7 +185,16 @@ fn_update() {
         case "$cmd" in
           "install") npm install ${args:-} ;;
           "update") npm update $args ;;
-          "update-latest") npx --yes npm-check-updates -u && npm install || { echo "Warning: npm-check-updates modified package.json but npm install failed — manual intervention may be needed."; return 1; } ;;
+          "update-latest")
+            if ! npx --yes npm-check-updates -u; then
+              echo "Error: npm-check-updates failed."
+              return 1
+            fi
+            if ! npm install; then
+              echo "Warning: npm-check-updates modified package.json but npm install failed — manual intervention may be needed."
+              return 1
+            fi
+            ;;
           "run") npm $args ;;
         esac
         ;;
@@ -224,13 +233,8 @@ fn_update() {
     fi
 
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
-      # Detect package manager for current directory and verify it is installed
+      # Detect package manager for current directory
       pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
-      if ! check_package_manager "$pkg_manager"; then
-        had_failures=1
-        cd "$target_dir" || exit 1
-        continue
-      fi
 
       # Calculate current position (i + 1 since array is 0-based)
       current_pos=$((i + 1))
@@ -269,6 +273,14 @@ fn_update() {
           echo ""
           echo "Debug: Working on $current_dir_name"
           echo ""
+        fi
+
+        if [[ $FLAG_L == 1 || $FLAG_P == 1 || $FLAG_S == 1 || $FLAG_T == 1 ]]; then
+          if ! check_package_manager "$pkg_manager"; then
+            had_failures=1
+            cd "$target_dir" || exit 1
+            continue
+          fi
         fi
 
         if [[ $FLAG_L == 1 ]]; then
