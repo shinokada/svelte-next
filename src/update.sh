@@ -37,14 +37,20 @@ fn_update() {
     exit 1
   fi
 
+  if [[ -n "${FROM:-}" ]] && ! [[ "$FROM" =~ ^[0-9]+$ ]]; then
+    newBannerColor "Error: FROM must be a non-negative integer." "red" "*"
+    exit 1
+  fi
+
   # Check if FROM is set and valid
-  if [[ -n $FROM ]] && (( FROM >= dir_count )); then
+  if [[ -n "${FROM:-}" ]] && (( FROM >= dir_count )); then
     newBannerColor "Error: FROM value ($FROM) is greater than or equal to the number of directories ($dir_count)." "red" "*"
     newBannerColor "Please choose a FROM value less than $dir_count." "yellow" "*"
     exit 1
   fi
 
   messages=()
+  had_failures=0
   messages+=("🚀 Welcome to svelte-next update. Use -h or --help for help.")
   messages+=("This script will run the following tasks:")
   messages+=("")
@@ -56,7 +62,7 @@ fn_update() {
   fi
 
   if [[ $FLAG_L == 1 ]]; then
-      messages+=("⏭️  Skipping package manager update (-L takes precedence)")
+      messages+=("⚡ Running package manager latest update (-L takes precedence over regular update)")
   elif [[ $FLAG_P != 0 ]]; then
       messages+=("⚡ Package manager update")
   else
@@ -81,7 +87,7 @@ fn_update() {
       messages+=("⏭️  Skipping git commands (-g)")
   fi
 
-  if [[ "${FROM:-0}" =~ ^[0-9]+$ ]] && (( FROM > 0 )); then
+  if [[ -n "${FROM:-}" ]] && (( FROM > 0 )); then
     messages+=("⚡ Starting from index $FROM")
   fi
 
@@ -270,6 +276,7 @@ fn_update() {
             newBannerColor "👍 update --latest completed" "green" "*"
           else
             newBannerColor "❌ update --latest failed in $current_dir_name" "red" "*"
+            had_failures=1
             cd "$target_dir" || exit 1
             continue
           fi
@@ -279,6 +286,7 @@ fn_update() {
             newBannerColor "👍 $pkg_manager update completed" "green" "*"
           else
             newBannerColor "❌ $pkg_manager update failed in $current_dir_name" "red" "*"
+            had_failures=1
             cd "$target_dir" || exit 1
             continue
           fi
@@ -327,6 +335,7 @@ fn_update() {
             newBannerColor "🚀 Git commands completed" "green" "*"
           else
             newBannerColor "❌ Git commit/push failed" "red" "*"
+            had_failures=1
           fi
         else
           newBannerColor "⏭️  Skipping git commands" "yellow" "*"
@@ -392,11 +401,11 @@ fn_update() {
   for api in "${APIS[@]}"; do
     if fetch_quote "$api"; then
       newBannerColor "$QUOTE" "green" "*"
-      exit 0
+      exit "$had_failures"
     fi
   done
 
   # All APIs failed
   newBannerColor "⚠️ All quote APIs are unavailable (rate limited or down)" "yellow" "*"
-  exit 0
+  exit "$had_failures"
 }
