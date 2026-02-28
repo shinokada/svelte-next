@@ -7,7 +7,7 @@
 # Update:        2026-02-27
 
 set -eu
-VERSION="0.6.0"
+VERSION="0.6.2"
 SCRIPT_NAME=$(basename "$0")
 
 # Locate the directory that contains lib/ and src/ by trying candidate
