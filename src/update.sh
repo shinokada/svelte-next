@@ -27,42 +27,63 @@ fn_update() {
     exit 1
   fi
 
-  # Count the number of directories
-  dir_count=$(find "$target_dir" -maxdepth 1 -type d | wc -l)
-  dir_count=$((dir_count - 1))  # Subtract 1 to exclude the target directory itself
+  # Count only the directories that match the processing loop (non-hidden)
+  dir_count=$(find "$target_dir" -mindepth 1 -maxdepth 1 -type d ! -name '.*' | wc -l)
 
   newBannerColor "Total directories found: $dir_count" "blue" "*"
 
+  if ! command -v jq &>/dev/null; then
+    newBannerColor "Error: jq is required but is not installed." "red" "*"
+    exit 1
+  fi
+
+  if [[ -n "${FROM:-}" ]] && ! [[ "$FROM" =~ ^[0-9]+$ ]]; then
+    newBannerColor "Error: FROM must be a non-negative integer." "red" "*"
+    exit 1
+  fi
+
   # Check if FROM is set and valid
-  if [[ -n $FROM ]] && (( FROM >= dir_count )); then
+  if [[ -n "${FROM:-}" ]] && (( FROM >= dir_count )); then
     newBannerColor "Error: FROM value ($FROM) is greater than or equal to the number of directories ($dir_count)." "red" "*"
     newBannerColor "Please choose a FROM value less than $dir_count." "yellow" "*"
     exit 1
   fi
 
   messages=()
+  had_failures=0
   messages+=("🚀 Welcome to svelte-next update. Use -h or --help for help.")
   messages+=("This script will run the following tasks:")
   messages+=("")
 
-  if [[ $FLAG_P == 1 ]]; then
+  # FLAG_L=1 means -L was passed (run latest update)
+  # FLAG_P/S/T/G use inverted logic: 1=run (flag not passed), 0=skip (flag passed)
+  if [[ $FLAG_L == 1 ]]; then
+      messages+=("⚡ Update all packages to latest (ignoring semver ranges, -L takes precedence)")
+  elif [[ $FLAG_P != 0 ]]; then
       messages+=("⚡ Package manager update")
+  else
+      messages+=("⏭️  Skipping package manager update (-p)")
   fi
 
   if [[ $FLAG_S == 1 ]]; then
       messages+=("⚡ Install svelte@\"^$svelte_version\"")
+  else
+      messages+=("⏭️  Skipping svelte install (-s)")
   fi
 
   if [[ $FLAG_T == 1 ]]; then
       messages+=("⚡ Run integration/e2e tests")
+  else
+      messages+=("⏭️  Skipping tests (-t)")
   fi
 
   if [[ $FLAG_G == 1 ]]; then
       messages+=("⚡ git add, commit, and push")
+  else
+      messages+=("⏭️  Skipping git commands (-g)")
   fi
 
-  if [[ $FROM ]]; then
-    FROM=$((FROM))
+  if [[ -n "${FROM:-}" ]] && (( FROM > 0 )); then
     messages+=("⚡ Starting from index $FROM")
   fi
 
@@ -73,7 +94,10 @@ fn_update() {
   newBannerColor "$formatted_message" "blue" "*"
 
   cd "$target_dir" || exit
-  directories=($(ls -d */))
+  directories=()
+  for d in */; do
+    [[ -d "$d" ]] && directories+=("$d")
+  done
 
   # Function to detect package manager
   detect_package_manager() {
@@ -91,19 +115,29 @@ fn_update() {
     fi
   }
 
-  # Function to get package version
-  get_package_version() {
+  # Check that the detected package manager is actually installed
+  check_package_manager() {
     local pkg_manager="$1"
-    local package="$2"
-    
-    case "$pkg_manager" in
-      "bun")
-        bun pm ls "$package" | grep "$package" | awk '{print $2}'
-        ;;
-      "pnpm"|"yarn"|"npm")
-        "$pkg_manager" list "$package" --depth=0 | tail -n 1
-        ;;
-    esac
+    if ! command -v "$pkg_manager" &>/dev/null; then
+      newBannerColor "Error: $pkg_manager is required for this project but is not installed." "red" "*"
+      return 1
+    fi
+    if [[ "$pkg_manager" == "npm" && $FLAG_L == 1 ]] && ! command -v npx &>/dev/null; then
+      newBannerColor "Error: npx is required for npm latest updates but is not installed." "red" "*"
+      return 1
+    fi
+    return 0
+  }
+
+  # Read the installed version directly from package.json using jq.
+  # This avoids shelling out to the package manager (which may hit the
+  # network or hang) just to read a version number we already have on disk.
+  get_package_version() {
+    local package_name="$1"
+    local package_json="$2"
+    local version
+    version=$(jq -r --arg pkg "$package_name" '(.dependencies[$pkg] // .devDependencies[$pkg] // .peerDependencies[$pkg] // .optionalDependencies[$pkg]) // empty | ltrimstr("^") | ltrimstr("~")' "$package_json")
+    echo "${version:-}"
   }
 
   # Function to run package manager commands
@@ -117,6 +151,7 @@ fn_update() {
         case "$cmd" in
           "install") bun add ${args:-} ;;  # Use ${args:-} to handle empty args
           "update") bun update $args ;;
+          "update-latest") bun update --latest ;;
           "run") bun $args ;;
         esac
         ;;
@@ -124,6 +159,7 @@ fn_update() {
         case "$cmd" in
           "install") pnpm install ${args:-} ;;
           "update") pnpm update $args ;;
+          "update-latest") pnpm up -L ;;
           "run") pnpm $args ;;
         esac
         ;;
@@ -131,6 +167,17 @@ fn_update() {
         case "$cmd" in
           "install") yarn add ${args:-} ;;
           "update") yarn upgrade $args ;;
+          "update-latest")
+            # Detect Yarn major version: Berry (v2+) uses 'yarn up *';
+            # Classic (v1) uses 'yarn upgrade --latest'.
+            local yarn_major
+            yarn_major=$(yarn --version 2>/dev/null | cut -d'.' -f1)
+            if [[ "$yarn_major" =~ ^[0-9]+$ ]] && (( yarn_major >= 2 )); then
+              yarn up '*'
+            else
+              yarn upgrade --latest
+            fi
+            ;;
           "run") yarn $args ;;
         esac
         ;;
@@ -138,6 +185,16 @@ fn_update() {
         case "$cmd" in
           "install") npm install ${args:-} ;;
           "update") npm update $args ;;
+          "update-latest")
+            if ! npx --yes npm-check-updates -u; then
+              echo "Error: npm-check-updates failed."
+              return 1
+            fi
+            if ! npm install; then
+              echo "Warning: npm-check-updates modified package.json but npm install failed — manual intervention may be needed."
+              return 1
+            fi
+            ;;
           "run") npm $args ;;
         esac
         ;;
@@ -162,12 +219,12 @@ fn_update() {
     if [[ $DEBUG == 1 ]]; then
       echo ""
       echo "Debug: Checking $target_dir/$current_dir_name"
-      if [[ -f "$target_dir/$current_dir_name/package.json" ]] then
+      if [[ -f "$target_dir/$current_dir_name/package.json" ]]; then
         echo "Debug: $target_dir/$current_dir_name/package.json exists."
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not exist."
       fi
-      if grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
+      if jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
         echo "Debug: $target_dir/$current_dir_name/package.json contains 'svelte'."
       else
         echo "Debug: $target_dir/$current_dir_name/package.json does not contain 'svelte'."
@@ -175,7 +232,7 @@ fn_update() {
       echo ""
     fi
 
-    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && grep -q '"svelte":' "$target_dir/$current_dir_name/package.json"; then
+    if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
       # Detect package manager for current directory
       pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
 
@@ -185,9 +242,13 @@ fn_update() {
       total_dirs=${#directories[@]}
       newBannerColor "🚀 Checking $current_dir_name ($current_pos/$total_dirs) using $pkg_manager" "blue" "*"
       
-      # Get current Svelte version
-      current_version=$(get_package_version "$pkg_manager" "svelte")
-      version_number=$(echo "$current_version" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-next\.[0-9]+)?')
+      # Get current Svelte version directly from package.json (no network call)
+      local pkg_json="$target_dir/$current_dir_name/package.json"
+      current_version=$(get_package_version "svelte" "$pkg_json")
+      version_number=$(echo "$current_version" | grep -oE '[0-9]+([.][0-9]+){0,2}([.-][0-9A-Za-z.]+)?' | head -n1)
+
+      # Extract major version from broader valid ranges (e.g. ^5, 5.x, >=5, 5.0.0-next.1)
+      svelte_major=$(echo "$version_number" | grep -oE '^[0-9]+')
 
       newBannerColor "Your current Svelte version is: $current_version" "green" "*"
 
@@ -195,17 +256,18 @@ fn_update() {
         echo ""
         echo "Debug: Full version string: '$current_version'"
         echo "Debug: Extracted version number: '$version_number'"
+        echo "Debug: Svelte major version: '$svelte_major'"
         echo "Debug: Using package manager: '$pkg_manager'"
 
-      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Debug: $current_version is a valid Svelte version"
+        if [[ "$svelte_major" =~ ^[0-9]+$ ]] && (( svelte_major >= 5 )); then
+          echo "Debug: $current_version is a supported Svelte version (major >= 5)"
         else
-          echo "Debug: $current_version is not a valid Svelte version"
+          echo "Debug: $current_version is not a supported Svelte version (major < 5)"
         fi
         echo ""
       fi
 
-      if [[ "$version_number" =~ ^5\.0\.0(-next\.[0-9]+)?$ ]] || [[ "$version_number" =~ ^5\.[0-9]+\.[0-9]+$ ]]; then
+      if [[ "$svelte_major" =~ ^[0-9]+$ ]] && (( svelte_major >= 5 )); then
 
         if [[ $DEBUG == 1 ]]; then
           echo ""
@@ -213,21 +275,55 @@ fn_update() {
           echo ""
         fi
 
-        if [[ $FLAG_P == 1 ]];then
-          newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*" 
-          run_pkg_cmd "update" "$pkg_manager"
-          newBannerColor "👍 pnpm update completed" "green" "*" 
+        if [[ $FLAG_L == 1 || $FLAG_P == 1 || $FLAG_S == 1 || $FLAG_T == 1 ]]; then
+          if ! check_package_manager "$pkg_manager"; then
+            had_failures=1
+            cd "$target_dir" || exit 1
+            continue
+          fi
+        fi
+
+        if [[ $FLAG_L == 1 ]]; then
+          newBannerColor "🔄 Running update --latest in $current_dir_name using $pkg_manager ..." "magenta" "*"
+          if run_pkg_cmd "update-latest" "$pkg_manager"; then
+            newBannerColor "👍 update --latest completed" "green" "*"
+          else
+            newBannerColor "❌ update --latest failed in $current_dir_name" "red" "*"
+            had_failures=1
+            cd "$target_dir" || exit 1
+            continue
+          fi
+        elif [[ $FLAG_P == 1 ]]; then
+          newBannerColor "🔄 Running $pkg_manager update in $current_dir_name ..." "magenta" "*"
+          if run_pkg_cmd "update" "$pkg_manager"; then
+            newBannerColor "👍 $pkg_manager update completed" "green" "*"
+          else
+            newBannerColor "❌ $pkg_manager update failed in $current_dir_name" "red" "*"
+            had_failures=1
+            cd "$target_dir" || exit 1
+            continue
+          fi
         else
-          newBannerColor "⏭️  Skipping pnpm update." "yellow" "*"
+          newBannerColor "⏭️  Skipping package manager update." "yellow" "*"
         fi
         
         if [[ $FLAG_S == 1 ]];then
           if [[ "$svelte_version" == "latest" ]];then
             newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
-            run_pkg_cmd "install" "$pkg_manager" "-D svelte@latest"
+            if ! run_pkg_cmd "install" "$pkg_manager" "-D svelte@latest"; then
+              newBannerColor "❌ svelte installation failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
           else
             newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
-            run_pkg_cmd "install" "$pkg_manager" "-D svelte@$svelte_version"
+            if ! run_pkg_cmd "install" "$pkg_manager" "-D svelte@$svelte_version"; then
+              newBannerColor "❌ svelte installation failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
           fi
           newBannerColor "🚀 svelte installation completed" "green" "*"
         else
@@ -238,11 +334,21 @@ fn_update() {
           # Check if package.json has "test:integration" or "test:e2e" scripts
           if grep -q '"test:integration": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
             newBannerColor "🏃 Running test:integration ..." "magenta" "*"
-            run_pkg_cmd "run" "$pkg_manager" "test:integration"
+            if ! run_pkg_cmd "run" "$pkg_manager" "test:integration"; then
+              newBannerColor "❌ test:integration failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
             newBannerColor "🚀 test:integration completed" "green" "*"
           elif grep -q '"test:e2e": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
             newBannerColor "🏃 Running test:e2e ..." "magenta" "*"
-            run_pkg_cmd "run" "$pkg_manager" "test:e2e"
+            if ! run_pkg_cmd "run" "$pkg_manager" "test:e2e"; then
+              newBannerColor "❌ test:e2e failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
             newBannerColor "🚀 test:e2e completed" "green" "*"
           else
             newBannerColor "⏭️  No compatible test script found in package.json." "yellow" "*"
@@ -252,17 +358,24 @@ fn_update() {
         fi
   
         if [[ -d "./.git" ]] && [[ $FLAG_G == 1 ]]; then
-          # get the current version installed
-          new_version=$(get_package_version "$pkg_manager" "svelte")
+          # get the post-update version from package.json
+          new_version=$(get_package_version "svelte" "$pkg_json")
           newBannerColor "🏃 Running git commands ..." "magenta" "*"
-          git add -A && git commit --message "Update Svelte to $new_version" && git push origin $(git branch --show-current)
-          newBannerColor "🚀 Git commands completed" "green" "*"
+          git add -A
+          if git diff --cached --quiet; then
+            newBannerColor "ℹ️  No changes to commit" "yellow" "*"
+          elif git commit --message "Update Svelte to $new_version" && git push origin "$(git branch --show-current)"; then
+            newBannerColor "🚀 Git commands completed" "green" "*"
+          else
+            newBannerColor "❌ Git commit/push failed" "red" "*"
+            had_failures=1
+          fi
         else
           newBannerColor "⏭️  Skipping git commands" "yellow" "*"
         fi
 
       else
-        newBannerColor  "Skipping $current_dir_name: No package.json or no Svelte dependency" "yellow" "*"
+        newBannerColor "Skipping $current_dir_name: Svelte major version ($svelte_major) is less than 5" "yellow" "*"
       fi
       cd "$target_dir" || { echo "Failed to return to $target_dir"; exit 1; }
     else
@@ -321,11 +434,11 @@ fn_update() {
   for api in "${APIS[@]}"; do
     if fetch_quote "$api"; then
       newBannerColor "$QUOTE" "green" "*"
-      exit 0
+      exit "$had_failures"
     fi
   done
 
   # All APIs failed
   newBannerColor "⚠️ All quote APIs are unavailable (rate limited or down)" "yellow" "*"
-  exit 1
+  exit "$had_failures"
 }

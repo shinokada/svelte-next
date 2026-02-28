@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install nfpm
+        run: |
+          NFPM_VERSION=2.38.0
+          curl -fsSL "https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz" \
+            | tar -xz -C /usr/local/bin nfpm
+
+      - name: Create tarballs (Linux and macOS)
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          STAGING="dist/svelte-next-${VERSION}"
+          mkdir -p "$STAGING"
+          cp -r svelte-next lib src README.md LICENSE "$STAGING/"
+          cd dist
+          for platform in linux_amd64 linux_arm64 darwin_amd64 darwin_arm64; do
+            tar -czf "svelte-next_${VERSION}_${platform}.tar.gz" "svelte-next-${VERSION}"
+          done
+
+      - name: Build deb and rpm packages (amd64 and arm64)
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          for arch in amd64 arm64; do
+            NFPM_ARCH=$arch VERSION=$VERSION nfpm package \
+              --config nfpm.yaml \
+              --packager deb \
+              --target "dist/svelte-next_${VERSION}_linux_${arch}.deb"
+            NFPM_ARCH=$arch VERSION=$VERSION nfpm package \
+              --config nfpm.yaml \
+              --packager rpm \
+              --target "dist/svelte-next_${VERSION}_linux_${arch}.rpm"
+          done
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum -- ./*.tar.gz ./*.deb ./*.rpm > checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew tap
+        uses: mislav/bump-homebrew-formula-action@v3
+        with:
+          formula-name: svelte-next
+          homebrew-tap: shinokada/homebrew-svelte-next
+          base-branch: main
+          download-url: https://github.com/shinokada/svelte-next/archive/refs/tags/${{ github.ref_name }}.tar.gz
+        env:
+          COMMITTER_TOKEN: ${{ secrets.GH_PAT }}
