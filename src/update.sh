@@ -124,12 +124,13 @@ fn_update() {
     local pkg_manager="$1"
     if ! command -v "$pkg_manager" &>/dev/null; then
       newBannerColor "Error: $pkg_manager is required for this project but is not installed." "red" "*"
-      exit 1
+      return 1
     fi
     if [[ "$pkg_manager" == "npm" && $FLAG_L == 1 ]] && ! command -v npx &>/dev/null; then
       newBannerColor "Error: npx is required for npm latest updates but is not installed." "red" "*"
-      exit 1
+      return 1
     fi
+    return 0
   }
 
   # Read the installed version directly from package.json using jq.
@@ -229,7 +230,11 @@ fn_update() {
     if [[ -f "$target_dir/$current_dir_name/package.json" ]] && jq -e '.dependencies.svelte // .devDependencies.svelte // .peerDependencies.svelte // .optionalDependencies.svelte' "$target_dir/$current_dir_name/package.json" &>/dev/null; then
       # Detect package manager for current directory and verify it is installed
       pkg_manager=$(detect_package_manager "$target_dir/$current_dir_name")
-      check_package_manager "$pkg_manager"
+      if ! check_package_manager "$pkg_manager"; then
+        had_failures=1
+        cd "$target_dir" || exit 1
+        continue
+      fi
 
       # Calculate current position (i + 1 since array is 0-based)
       current_pos=$((i + 1))
@@ -297,10 +302,20 @@ fn_update() {
         if [[ $FLAG_S == 1 ]];then
           if [[ "$svelte_version" == "latest" ]];then
             newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
-            run_pkg_cmd "install" "$pkg_manager" "-D svelte@latest"
+            if ! run_pkg_cmd "install" "$pkg_manager" "-D svelte@latest"; then
+              newBannerColor "❌ svelte installation failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
           else
             newBannerColor "🏃 Installing svelte@$svelte_version using $pkg_manager ..." "magenta" "*"
-            run_pkg_cmd "install" "$pkg_manager" "-D svelte@$svelte_version"
+            if ! run_pkg_cmd "install" "$pkg_manager" "-D svelte@$svelte_version"; then
+              newBannerColor "❌ svelte installation failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
           fi
           newBannerColor "🚀 svelte installation completed" "green" "*"
         else
@@ -311,11 +326,21 @@ fn_update() {
           # Check if package.json has "test:integration" or "test:e2e" scripts
           if grep -q '"test:integration": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
             newBannerColor "🏃 Running test:integration ..." "magenta" "*"
-            run_pkg_cmd "run" "$pkg_manager" "test:integration"
+            if ! run_pkg_cmd "run" "$pkg_manager" "test:integration"; then
+              newBannerColor "❌ test:integration failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
             newBannerColor "🚀 test:integration completed" "green" "*"
           elif grep -q '"test:e2e": "playwright test"' "$target_dir/$current_dir_name/package.json"; then
             newBannerColor "🏃 Running test:e2e ..." "magenta" "*"
-            run_pkg_cmd "run" "$pkg_manager" "test:e2e"
+            if ! run_pkg_cmd "run" "$pkg_manager" "test:e2e"; then
+              newBannerColor "❌ test:e2e failed in $current_dir_name" "red" "*"
+              had_failures=1
+              cd "$target_dir" || exit 1
+              continue
+            fi
             newBannerColor "🚀 test:e2e completed" "green" "*"
           else
             newBannerColor "⏭️  No compatible test script found in package.json." "yellow" "*"
