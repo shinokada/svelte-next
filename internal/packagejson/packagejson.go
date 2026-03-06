@@ -96,7 +96,8 @@ func (p *PackageJSON) HasSvelte() bool {
 // devDependencies (and not in any other section). This is a convenience
 // wrapper around SvelteDependencySection.
 func (p *PackageJSON) SvelteIsDevDependency() bool {
-	return p.SvelteDependencySection() == "devDependencies"
+	sections := p.SvelteDependencySections()
+	return len(sections) == 1 && sections[0] == "devDependencies"
 }
 
 // SvelteDependencySection returns the name of the first dependency map that

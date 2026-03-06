@@ -115,6 +115,7 @@ func TestSvelteIsDevDependency(t *testing.T) {
 		{"in devDependencies", `{"devDependencies":{"svelte":"^5.0.0"}}`, true},
 		{"in dependencies", `{"dependencies":{"svelte":"^5.0.0"}}`, false},
 		{"in peerDependencies", `{"peerDependencies":{"svelte":"^5.0.0"}}`, false},
+		{"in dev and peer", `{"devDependencies":{"svelte":"^5.0.0"},"peerDependencies":{"svelte":"^5.0.0"}}`, false},
 		{"absent", `{}`, false},
 	}
 	for _, tc := range tests {
