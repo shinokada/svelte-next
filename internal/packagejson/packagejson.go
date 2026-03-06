@@ -88,6 +88,13 @@ func (p *PackageJSON) HasSvelte() bool {
 	return lookupDep(p, "svelte") != ""
 }
 
+// SvelteIsDevDependency returns true if "svelte" is declared in
+// devDependencies (and not in any other section). This is a convenience
+// wrapper around SvelteDependencySection.
+func (p *PackageJSON) SvelteIsDevDependency() bool {
+	return p.SvelteDependencySection() == "devDependencies"
+}
+
 // SvelteDependencySection returns the name of the dependency map that
 // currently contains "svelte": "dependencies", "devDependencies",
 // "peerDependencies", or "optionalDependencies". Returns "" if svelte is
