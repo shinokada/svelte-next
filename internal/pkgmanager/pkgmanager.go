@@ -69,6 +69,7 @@ func Run(dir string, mgr Manager, dryRun bool, cmd string, args ...string) error
 
 	c := exec.Command(argv[0], argv[1:]...)
 	c.Dir = dir
+	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	return c.Run()

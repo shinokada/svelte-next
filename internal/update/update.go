@@ -105,6 +105,15 @@ func Run(opts Options) error {
 				ui.Errorf("  [%s] package update failed: %v", name, err)
 				hadFailure = true
 				projectFailed = true
+			} else if opts.Latest && opts.SkipSvelte && mgr == pkgmanager.Npm {
+				// npm update-latest only rewrites package.json via npm-check-updates;
+				// a follow-up install is required to sync the lockfile and node_modules.
+				ui.Infof("  running: npm install (lockfile sync after npm-check-updates)")
+				if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install"); err != nil {
+					ui.Errorf("  [%s] npm install failed: %v", name, err)
+					hadFailure = true
+					projectFailed = true
+				}
 			}
 		}
 
@@ -123,16 +132,18 @@ func Run(opts Options) error {
 		}
 
 		// ── 6. Integration / e2e tests ───────────────────────────────────────
+		// Both test:integration and test:e2e are run if present; skipping one
+		// because the other exists could miss a failing suite.
 		if !opts.SkipTest {
 			for _, script := range []string{"test:integration", "test:e2e"} {
-				if p.HasScript(script) {
-					ui.Infof("  running: %s", script)
-					if err := pkgmanager.Run(dir, mgr, opts.DryRun, "run", script); err != nil {
-						ui.Errorf("  [%s] %s failed: %v", name, script, err)
-						hadFailure = true
-						projectFailed = true
-					}
-					break // run only one test script per project
+				if !p.HasScript(script) {
+					continue
+				}
+				ui.Infof("  running: %s", script)
+				if err := pkgmanager.Run(dir, mgr, opts.DryRun, "run", script); err != nil {
+					ui.Errorf("  [%s] %s failed: %v", name, script, err)
+					hadFailure = true
+					projectFailed = true
 				}
 			}
 		}
@@ -146,12 +157,15 @@ func Run(opts Options) error {
 			} else {
 				staged, err := git.HasStagedChanges(dir)
 				if err != nil {
-					ui.Warnf("  [%s] could not check staged changes: %v", name, err)
-				}
-				if staged || opts.DryRun {
+					ui.Errorf("  [%s] could not check staged changes: %v", name, err)
+					hadFailure = true
+					projectFailed = true
+				} else if staged || opts.DryRun {
 					branch, err := git.CurrentBranch(dir)
 					if err != nil {
-						ui.Warnf("  [%s] could not determine branch, skipping push: %v", name, err)
+						ui.Errorf("  [%s] could not determine current branch: %v", name, err)
+						hadFailure = true
+						projectFailed = true
 						branch = ""
 					}
 					newVer := "latest"
