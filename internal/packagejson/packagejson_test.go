@@ -1,6 +1,8 @@
 package packagejson
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -96,6 +98,34 @@ func TestRead_MissingFile(t *testing.T) {
 	_, err := Read("/nonexistent/package.json")
 	if err == nil {
 		t.Error("expected error for missing file")
+	}
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("expected fs.ErrNotExist, got %v", err)
+	}
+}
+
+func TestSvelteIsDevDependency(t *testing.T) {
+	tests := []struct {
+		name string
+		json string
+		want bool
+	}{
+		{"in devDependencies", `{"devDependencies":{"svelte":"^5.0.0"}}`, true},
+		{"in dependencies", `{"dependencies":{"svelte":"^5.0.0"}}`, false},
+		{"in peerDependencies", `{"peerDependencies":{"svelte":"^5.0.0"}}`, false},
+		{"absent", `{}`, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := writeTemp(t, tc.json)
+			p, err := Read(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := p.SvelteIsDevDependency(); got != tc.want {
+				t.Errorf("SvelteIsDevDependency() = %v, want %v", got, tc.want)
+			}
+		})
 	}
 }
 

@@ -88,6 +88,15 @@ func (p *PackageJSON) HasSvelte() bool {
 	return lookupDep(p, "svelte") != ""
 }
 
+// SvelteIsDevDependency returns true if "svelte" is listed under
+// devDependencies. Returns false if svelte is absent or in any other section.
+// Callers use this to decide whether to pass -D when re-installing svelte,
+// preserving the project's original dependency bucket.
+func (p *PackageJSON) SvelteIsDevDependency() bool {
+	_, ok := p.DevDependencies["svelte"]
+	return ok
+}
+
 // lookupDep searches all four dependency maps for key and returns its value,
 // or "" if not found. Priority: dependencies > devDependencies >
 // peerDependencies > optionalDependencies.

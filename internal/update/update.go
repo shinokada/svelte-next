@@ -2,7 +2,9 @@
 package update
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"path/filepath"
 	"time"
 
@@ -68,7 +70,12 @@ func Run(opts Options) error {
 		// ── 1. Check package.json + svelte dep ──────────────────────────────
 		p, err := packagejson.Read(pkgPath)
 		if err != nil {
-			ui.Warnf("  [%s] skipping: no package.json or parse error", name)
+			if errors.Is(err, fs.ErrNotExist) {
+				ui.Warnf("  [%s] skipping: no package.json", name)
+				continue
+			}
+			ui.Errorf("  [%s] invalid package.json: %v", name, err)
+			hadFailure = true
 			continue
 		}
 		if !p.HasSvelte() {
@@ -124,7 +131,11 @@ func Run(opts Options) error {
 				svelteTarget = "svelte@" + opts.SvelteVer
 			}
 			ui.Infof("  installing: %s", svelteTarget)
-			if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", "-D", svelteTarget); err != nil {
+			installArgs := []string{"install", svelteTarget}
+			if p.SvelteIsDevDependency() {
+				installArgs = []string{"install", "-D", svelteTarget}
+			}
+			if err := pkgmanager.Run(dir, mgr, opts.DryRun, installArgs...); err != nil {
 				ui.Errorf("  [%s] svelte install failed: %v", name, err)
 				hadFailure = true
 				projectFailed = true
