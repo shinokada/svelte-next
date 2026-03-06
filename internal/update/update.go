@@ -131,11 +131,13 @@ func Run(opts Options) error {
 				svelteTarget = "svelte@" + opts.SvelteVer
 			}
 			ui.Infof("  installing: %s", svelteTarget)
-			installArgs := []string{"install", svelteTarget}
+			var installExtraArgs []string
 			if p.SvelteIsDevDependency() {
-				installArgs = []string{"install", "-D", svelteTarget}
+				installExtraArgs = []string{"-D", svelteTarget}
+			} else {
+				installExtraArgs = []string{svelteTarget}
 			}
-			if err := pkgmanager.Run(dir, mgr, opts.DryRun, installArgs...); err != nil {
+			if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", installExtraArgs...); err != nil {
 				ui.Errorf("  [%s] svelte install failed: %v", name, err)
 				hadFailure = true
 				projectFailed = true
