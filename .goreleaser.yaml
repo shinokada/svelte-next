@@ -53,12 +53,31 @@ brews:
   - name: svelte-next
     homepage: https://github.com/shinokada/svelte-next
     description: Update Svelte 5+ projects across multiple directories
+    license: MIT
     repository:
       owner: shinokada
       name: homebrew-svelte-next
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
+      name: GitHub Actions
+      email: actions@github.com
+    directory: Formula
+    install: |
+      bin.install "svelte-next"
+    test: |
+      system "#{bin}/svelte-next", "version"
+
+scoops:
+  - repository:
+      owner: shinokada
+      name: scoop-bucket
+      branch: main
+      token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+    directory: bucket
+    homepage: https://github.com/shinokada/svelte-next
+    description: Update Svelte 5+ projects across multiple directories
+    license: MIT
 
 changelog:
   sort: asc
