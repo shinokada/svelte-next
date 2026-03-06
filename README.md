@@ -1,63 +1,27 @@
-# Svelte-Next
+# svelte-next
 
-## Automate Svelte Version Updates
+> Automate Svelte 5+ version updates across multiple project directories.
 
-This script automates updating Svelte versions in project directories. If you have multiple Svelte projects in subdirectories, this script will update them all.
+`svelte-next` scans a target directory, detects Svelte 5+ projects, and runs package updates, svelte installs, integration/e2e tests, and git commits — all in one command.
 
-## Features:
-
-- Automatic package manager detection (supports pnpm, npm, yarn, and bun)
-- Updates Svelte to the specified version (defaults to "latest")
-- Option to update all packages to their latest versions, ignoring semver ranges (`-L` / `--latest`)
-- Option to run package updates, integration/e2e tests, and git commands (`git add`, `git commit`, `git push`)
-- Option to run in a debug mode
-- Option to start at a certain index of project subdirectories
-- Displays colored messages for informative progress
-
-## Windows Support
-
-`svelte-next` is a Bash script and does not run natively on Windows. Windows users have three options, in order of recommendation:
-
-### Option 1: WSL (Recommended)
-
-WSL (Windows Subsystem for Linux) runs a full Linux environment inside Windows and is the most compatible option. Install it once from PowerShell (run as Administrator):
-
-```powershell
-wsl --install
-```
-
-Restart your PC, then open the Ubuntu terminal and install `svelte-next` normally using the Homebrew or manual instructions below. Your Windows project files are accessible inside WSL at `/mnt/c/Users/YourName/...`.
-
-### Option 2: Git Bash
-
-If you already have [Git for Windows](https://git-scm.com/download/win) installed, Git Bash is available immediately — no extra setup needed. Open Git Bash and use the manual (curl or git clone) install methods below.
-
-> **Note:** Git Bash is missing `tput` and some GNU coreutils, so colored output will not display correctly. The script will still run, but expect some visual noise.
-
-### Option 3: Cygwin
-
-[Cygwin](https://www.cygwin.com/) provides a fuller Unix environment than Git Bash but is heavier to install. During Cygwin setup, make sure to select `bash`, `curl`, `git`, and `jq` packages.
+Built in Go in a single static binary. It runs natively on macOS, Linux, and Windows.
 
 ---
 
-## Requirements:
+## Features
 
-- One of the following package managers:
-  - pnpm (default if no lock file found)
-  - npm
-  - yarn
-  - bun
-- git
-- jq
+- **Automatic package manager detection** — bun, pnpm, yarn, or npm, detected from lock files
+- **Svelte 5+ targeting** — projects below major version 5 are automatically skipped
+- **`list` subcommand** — read-only audit of all projects before making any changes
+- **`--dry-run`** — preview every action without executing anything
+- **`--exclude`** — skip specific directories by name
+- **`--latest` / `-L`** — update all packages to latest, ignoring semver ranges
+- **`--from` / `-f`** — resume from a specific subdirectory index
+- **Git workflow** — `git add -A`, `git commit`, `git push` after each successful update
+- **Integration/e2e tests** — runs `test:integration` or `test:e2e` scripts if present
+- **Motivational quote** — fetched from a public API at the end of each run
 
-## Package Manager Detection
-
-The script automatically detects which package manager to use based on the lock files present:
-- `bun.lockb` → uses Bun
-- `pnpm-lock.yaml` → uses pnpm
-- `yarn.lock` → uses Yarn
-- `package-lock.json` → uses npm
-- If no lock file is found → defaults to pnpm
+---
 
 ## Installation
 
@@ -68,7 +32,7 @@ brew tap shinokada/svelte-next
 brew install svelte-next
 ```
 
-To upgrade to a newer version:
+To upgrade:
 
 ```sh
 brew upgrade svelte-next
@@ -76,168 +40,208 @@ brew upgrade svelte-next
 
 ### Debian / Ubuntu (deb)
 
-Download the `.deb` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), then install:
+Download the `.deb` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest):
 
 ```sh
-# amd64
-sudo dpkg -i svelte-next_<version>_linux_amd64.deb
-
-# arm64
-sudo dpkg -i svelte-next_<version>_linux_arm64.deb
+sudo dpkg -i svelte-next_<version>_linux_amd64.deb   # amd64
+sudo dpkg -i svelte-next_<version>_linux_arm64.deb   # arm64
 ```
-
-To upgrade, download the new `.deb` and run `dpkg -i` again.
 
 ### Fedora / RHEL (rpm)
 
-Download the `.rpm` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), then install:
-
 ```sh
-# amd64
-sudo rpm -i svelte-next_<version>_linux_amd64.rpm
-
-# arm64
-sudo rpm -i svelte-next_<version>_linux_arm64.rpm
+sudo rpm -i svelte-next_<version>_linux_amd64.rpm    # amd64
+sudo rpm -i svelte-next_<version>_linux_arm64.rpm    # arm64
 ```
 
 To upgrade an existing install, replace `-i` with `-U`.
 
-### awesome package manager
+### Windows
 
-Install [awesome](https://github.com/shinokada/awesome):
-
-```sh
-curl -s https://raw.githubusercontent.com/shinokada/awesome/main/install | bash -s install
-```
-
-Add the following to your terminal config file, such as `.zshrc` or `.bashrc`:
-
-```sh
-export PATH=$HOME/.local/share/bin:$PATH
-```
-
-Then source the config file or open a new terminal tab:
-
-```sh
-# for example
-. ~/.zshrc
-```
-
-Install `svelte-next`:
-
-```sh
-awesome install shinokada/svelte-next
-```
+Download the `.zip` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), extract it, and add the directory to your `PATH`. No WSL, Git Bash, or Cygwin needed — the binary runs natively in CMD and PowerShell.
 
 ### Manual (tarball)
 
-Download the tarball for your platform from the [releases page](https://github.com/shinokada/svelte-next/releases), then install:
-
 ```sh
-# Fetch the latest version number automatically
-VERSION=$(curl -s https://api.github.com/repos/shinokada/svelte-next/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | cut -c2-)
+VERSION=$(curl -s https://api.github.com/repos/shinokada/svelte-next/releases/latest \
+  | grep '"tag_name"' | cut -d'"' -f4 | cut -c2-)
 PLATFORM=darwin_arm64  # darwin_amd64 | linux_amd64 | linux_arm64
 
 curl -sLO "https://github.com/shinokada/svelte-next/releases/download/v${VERSION}/svelte-next_${VERSION}_${PLATFORM}.tar.gz"
 tar -xzf "svelte-next_${VERSION}_${PLATFORM}.tar.gz"
-cd "svelte-next-${VERSION}"
-
-# Install binary and support files
-sudo cp svelte-next /usr/local/bin/svelte-next
-sudo chmod +x /usr/local/bin/svelte-next
-sudo mkdir -p /usr/local/share/svelte-next
-sudo cp -r lib src /usr/local/share/svelte-next/
+sudo mv svelte-next /usr/local/bin/
 ```
 
-### Manual (git clone)
+### Build from source
 
 ```sh
 git clone https://github.com/shinokada/svelte-next.git
 cd svelte-next
-sudo cp svelte-next /usr/local/bin/svelte-next
-sudo chmod +x /usr/local/bin/svelte-next
-sudo mkdir -p /usr/local/share/svelte-next
-sudo cp -r lib src /usr/local/share/svelte-next/
+make build          # binary written to ./bin/svelte-next
+make install        # installs to $GOPATH/bin
 ```
 
-> **Note:** The `git clone` method keeps `lib/` and `src/` next to the script in the cloned directory, so the manual `cp` to `/usr/local/share/svelte-next` is only needed if you move the binary to `/usr/local/bin`. If you run the script directly from the cloned directory (e.g. `./svelte-next`), no extra steps are needed.
+---
+
+## Requirements
+
+At runtime the binary only needs:
+
+- A supported package manager on `PATH`: **bun**, **pnpm**, **yarn**, or **npm**
+- **git** (only if the git workflow is enabled)
+
+---
+
+## Package Manager Detection
+
+Lock-file priority (first match wins):
+
+| Lock file           | Package manager |
+| ------------------- | --------------- |
+| `bun.lockb`         | bun             |
+| `bun.lock`          | bun (≥ 1.1)     |
+| `pnpm-lock.yaml`    | pnpm            |
+| `yarn.lock`         | yarn            |
+| `package-lock.json` | npm             |
+| *(none found)*      | pnpm (default)  |
+
+---
 
 ## Usage
 
+### `list` — audit projects without making changes
+
 ```sh
-# Install the latest and run package manager update, 
-# test:integration and git add, commit, and push 
-# if it is a git repo in subdirectories of the CURRENT directory.
+# List all Svelte projects in the current directory
+svelte-next list .
+
+# List projects, skipping 'api' and 'docs' directories
+svelte-next list --exclude "api,docs" .
+
+# Output as JSON (useful for scripting)
+svelte-next list --output json .
+
+# List projects in a specific directory
+svelte-next list ./projects
+```
+
+### `update` — update Svelte projects
+
+```sh
+# Update all Svelte 5+ projects in the current directory
 svelte-next update .
 
-# run the script in the ./Runes directory
-svelte-next update ./Runes
+# Preview every action without executing anything
+svelte-next update --dry-run .
 
-# Use -v param to install a certain Svelte next version.
-svelte-next update -v 5.x.x .
+# Update projects in a specific directory
+svelte-next update ./projects
 
-# Use -L or --latest to update all packages to their latest versions (ignores semver ranges):
+# Update all packages to latest (ignores semver ranges)
 svelte-next update -L .
 
-# Use -p flag to NOT run package updates:
-svelte-next update -p .
+# Install a specific Svelte version
+svelte-next update -n 5.28.1 .
 
-# Use -s flag to NOT run updating svelte:
-svelte-next update -s .
+# Skip directories named 'api' and 'docs'
+svelte-next update --exclude "api,docs" .
 
-# Use -g flag to NOT run git add, commit, and push:
-svelte-next update -g .
-
-# Use -t flag to NOT run integration/e2e tests:
-svelte-next update -t .
-
-# Use -f <number> for starting index of subdirectory:
+# Start from subdirectory index 3 (useful for resuming)
 svelte-next update -f 3 .
 
-# Use -d to run in debug mode:
-svelte-next update -d .
+# Skip individual workflow steps
+svelte-next update -p .    # skip package manager update
+svelte-next update -s .    # skip svelte install
+svelte-next update -t .    # skip integration/e2e tests
+svelte-next update -g .    # skip git add/commit/push
 
-# Combine the flags
+# Combine flags
 svelte-next update -pg .
 svelte-next update -pst .
 
-# To display version: 
+# Debug output
+svelte-next update -d .
+```
+
+### Other
+
+```sh
 svelte-next --version
-
-# To display help:
-svelte-next -h | --help
+svelte-next --help
+svelte-next update --help
+svelte-next list --help
 ```
 
-## Option list
+---
 
-```
--h --help: Displays help message.
--L --latest: Update all packages to their latest versions (ignores semver ranges).
--s: Skip running updating svelte.
--p: Skip running package updates.
--t: Skip running integration/e2e tests.
--g: Skip running git commands.
--d: Run in debug mode.
--f: Use -f for starting index of subdirectory
--v --version: version
-```
+## Flag Reference
 
-## Package Manager Commands Used
+### `update`
 
-The script translates commands appropriately for each package manager:
+| Flag            | Short | Default | Description                                    |
+| --------------- | ----- | ------- | ---------------------------------------------- |
+| `--latest`      | `-L`  | false   | Update all packages to latest (ignores semver) |
+| `--skip-pkg`    | `-p`  | false   | Skip package manager update                    |
+| `--skip-svelte` | `-s`  | false   | Skip svelte install                            |
+| `--skip-test`   | `-t`  | false   | Skip integration/e2e tests                     |
+| `--skip-git`    | `-g`  | false   | Skip git add/commit/push                       |
+| `--dry-run`     | —     | false   | Preview actions without executing              |
+| `--exclude`     | —     | —       | Comma-separated directory names to skip        |
+| `--from`        | `-f`  | 0       | Start at subdirectory index N                  |
+| `--next`        | `-n`  | —       | Specific Svelte version to install             |
+| `--debug`       | `-d`  | false   | Debug output                                   |
 
-| Action        | pnpm         | npm                                     | yarn                  | bun                 |
-| ------------- | ------------ | --------------------------------------- | --------------------- | ------------------- |
-| Install       | pnpm install | npm install                             | yarn add              | bun add             |
-| Update        | pnpm update  | npm update                              | yarn upgrade          | bun update          |
-| Update latest | pnpm up -L   | npx npm-check-updates -u && npm install | yarn upgrade --latest | bun update --latest |
-| Run           | pnpm         | npm                                     | yarn                  | bun                 |
+### `list`
 
-> **Note for npm users:** The `--latest` flag uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) (`ncu`) since npm has no native equivalent. This will rewrite your `package.json` before reinstalling.
+| Flag        | Default | Description                             |
+| ----------- | ------- | --------------------------------------- |
+| `--exclude` | —       | Comma-separated directory names to skip |
+| `--output`  | `table` | Output format: `table` or `json`        |
+| `--debug`   | false   | Debug output                            |
 
-## Note:
+---
 
-- The script automatically detects and uses the appropriate package manager based on lock files
-- The script assumes the target directory structure contains project subdirectories where Svelte is installed
-- Ensure you have proper permissions to modify files and run git commands in the target directories
-- If no lock file is found, the script defaults to using pnpm
+## Package Manager Commands
+
+| Action        | pnpm           | npm                        | yarn                    | bun                   |
+| ------------- | -------------- | -------------------------- | ----------------------- | --------------------- |
+| Install       | `pnpm install` | `npm install`              | `yarn add`              | `bun add`             |
+| Update        | `pnpm update`  | `npm update`               | `yarn upgrade`          | `bun update`          |
+| Update latest | `pnpm up -L`   | `npx npm-check-updates -u` | `yarn upgrade --latest` | `bun update --latest` |
+| Run script    | `pnpm`         | `npm`                      | `yarn`                  | `bun`                 |
+
+> **npm note:** `--latest` uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) since npm has no native equivalent. This rewrites `package.json` before reinstalling.
+
+---
+
+## How It Works
+
+For each subdirectory in the target path, `svelte-next update` does the following:
+
+1. Checks for `package.json` with a `svelte` dependency
+2. Skips the directory if Svelte major version is below 5
+3. Detects the package manager from lock files
+4. Runs the package manager update (unless `-p`)
+5. Installs the target Svelte version (unless `-s`)
+6. Runs `test:integration` or `test:e2e` if the script exists (unless `-t`)
+7. Runs `git add -A`, `git commit`, `git push` if inside a git repo (unless `-g`)
+
+At the end of a successful run, a motivational quote is fetched from a public API.
+
+With `--dry-run`, every step is printed as `[dry-run] <command>` and nothing is executed.
+
+---
+
+## Notes
+
+- Only subdirectories are scanned — files at the top level of the target directory are ignored
+- Hidden directories (names starting with `.`) are always skipped
+- `--exclude` matches exact directory names (case-sensitive); glob patterns are not supported in v1
+- If no lock file is found, pnpm is used as the default package manager
+- The git commit message is automatically set to `chore: update svelte to <version>`
+
+---
+
+## License
+
+MIT — see [LICENSE](./LICENSE).

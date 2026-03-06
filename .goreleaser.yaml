@@ -1,0 +1,71 @@
+# .goreleaser.yaml — svelte-next release configuration
+# Run: goreleaser release --snapshot --clean   (local test)
+# Run: goreleaser release                      (requires GITHUB_TOKEN)
+
+version: 2
+
+project_name: svelte-next
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: svelte-next
+    main: .
+    binary: svelte-next
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/shinokada/svelte-next/cmd.Version={{.Version}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+nfpms:
+  - id: packages
+    package_name: svelte-next
+    homepage: https://github.com/shinokada/svelte-next
+    maintainer: Shinichi Okada
+    description: Update Svelte 5+ projects across multiple directories
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/local/bin
+
+brews:
+  - name: svelte-next
+    homepage: https://github.com/shinokada/svelte-next
+    description: Update Svelte 5+ projects across multiple directories
+    repository:
+      owner: shinokada
+      name: homebrew-tap
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
