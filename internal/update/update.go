@@ -166,19 +166,17 @@ func Run(opts Options) error {
 						ui.Errorf("  [%s] could not determine current branch: %v", name, err)
 						hadFailure = true
 						projectFailed = true
-						branch = ""
-					}
-					newVer := "latest"
-					if opts.SvelteVer != "" {
-						newVer = opts.SvelteVer
-					}
-					msg := fmt.Sprintf("chore: update svelte to %s", newVer)
-					if err := git.Commit(dir, msg, opts.DryRun); err != nil {
-						ui.Errorf("  [%s] git commit failed: %v", name, err)
-						hadFailure = true
-						projectFailed = true
-					} else if branch != "" {
-						if err := git.Push(dir, branch, opts.DryRun); err != nil {
+					} else {
+						newVer := "latest"
+						if opts.SvelteVer != "" {
+							newVer = opts.SvelteVer
+						}
+						msg := fmt.Sprintf("chore: update svelte to %s", newVer)
+						if err := git.Commit(dir, msg, opts.DryRun); err != nil {
+							ui.Errorf("  [%s] git commit failed: %v", name, err)
+							hadFailure = true
+							projectFailed = true
+						} else if err := git.Push(dir, branch, opts.DryRun); err != nil {
 							ui.Errorf("  [%s] git push failed: %v", name, err)
 							hadFailure = true
 							projectFailed = true
