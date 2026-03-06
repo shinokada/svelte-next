@@ -132,9 +132,14 @@ func Run(opts Options) error {
 			}
 			ui.Infof("  installing: %s", svelteTarget)
 			var installExtraArgs []string
-			if p.SvelteIsDevDependency() {
+			switch p.SvelteDependencySection() {
+			case "devDependencies":
 				installExtraArgs = []string{"-D", svelteTarget}
-			} else {
+			case "peerDependencies":
+				installExtraArgs = []string{"--save-peer", svelteTarget}
+			case "optionalDependencies":
+				installExtraArgs = []string{"--save-optional", svelteTarget}
+			default:
 				installExtraArgs = []string{svelteTarget}
 			}
 			if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", installExtraArgs...); err != nil {

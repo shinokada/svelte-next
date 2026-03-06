@@ -88,13 +88,27 @@ func (p *PackageJSON) HasSvelte() bool {
 	return lookupDep(p, "svelte") != ""
 }
 
-// SvelteIsDevDependency returns true if "svelte" is listed under
-// devDependencies. Returns false if svelte is absent or in any other section.
-// Callers use this to decide whether to pass -D when re-installing svelte,
-// preserving the project's original dependency bucket.
-func (p *PackageJSON) SvelteIsDevDependency() bool {
-	_, ok := p.DevDependencies["svelte"]
-	return ok
+// SvelteDependencySection returns the name of the dependency map that
+// currently contains "svelte": "dependencies", "devDependencies",
+// "peerDependencies", or "optionalDependencies". Returns "" if svelte is
+// not listed. Callers use this to preserve the original bucket when
+// re-installing svelte.
+func (p *PackageJSON) SvelteDependencySection() string {
+	sections := []struct {
+		name string
+		m    map[string]string
+	}{
+		{"dependencies", p.Dependencies},
+		{"devDependencies", p.DevDependencies},
+		{"peerDependencies", p.PeerDependencies},
+		{"optionalDependencies", p.OptionalDependencies},
+	}
+	for _, s := range sections {
+		if _, ok := s.m["svelte"]; ok {
+			return s.name
+		}
+	}
+	return ""
 }
 
 // lookupDep searches all four dependency maps for key and returns its value,
