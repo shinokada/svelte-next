@@ -85,6 +85,8 @@ func Run(opts Options) error {
 		ui.PrintBanner(fmt.Sprintf("[%s]  manager: %s  svelte: %s",
 			name, mgr, p.SvelteVersion()), ui.Cyan, "-", 50)
 
+		projectFailed := false
+
 		// ── 4. Package update ────────────────────────────────────────────────
 		if !opts.SkipPkg {
 			cmd := "update"
@@ -95,6 +97,7 @@ func Run(opts Options) error {
 			if err := pkgmanager.Run(dir, mgr, opts.DryRun, cmd); err != nil {
 				ui.Errorf("  [%s] package update failed: %v", name, err)
 				hadFailure = true
+				projectFailed = true
 			}
 		}
 
@@ -108,6 +111,7 @@ func Run(opts Options) error {
 			if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", "-D", svelteTarget); err != nil {
 				ui.Errorf("  [%s] svelte install failed: %v", name, err)
 				hadFailure = true
+				projectFailed = true
 			}
 		}
 
@@ -119,6 +123,7 @@ func Run(opts Options) error {
 					if err := pkgmanager.Run(dir, mgr, opts.DryRun, "run", script); err != nil {
 						ui.Errorf("  [%s] %s failed: %v", name, script, err)
 						hadFailure = true
+						projectFailed = true
 					}
 					break // run only one test script per project
 				}
@@ -130,6 +135,7 @@ func Run(opts Options) error {
 			if err := git.Add(dir, opts.DryRun); err != nil {
 				ui.Errorf("  [%s] git add failed: %v", name, err)
 				hadFailure = true
+				projectFailed = true
 			} else {
 				staged, err := git.HasStagedChanges(dir)
 				if err != nil {
@@ -149,10 +155,12 @@ func Run(opts Options) error {
 					if err := git.Commit(dir, msg, opts.DryRun); err != nil {
 						ui.Errorf("  [%s] git commit failed: %v", name, err)
 						hadFailure = true
+						projectFailed = true
 					} else if branch != "" {
 						if err := git.Push(dir, branch, opts.DryRun); err != nil {
 							ui.Errorf("  [%s] git push failed: %v", name, err)
 							hadFailure = true
+							projectFailed = true
 						}
 					}
 				} else {
@@ -161,7 +169,11 @@ func Run(opts Options) error {
 			}
 		}
 
-		ui.Successf("  [%s] done", name)
+		if projectFailed {
+			ui.Warnf("  [%s] completed with errors", name)
+		} else {
+			ui.Successf("  [%s] done", name)
+		}
 	}
 
 	// ── 8. Motivational quote ────────────────────────────────────────────────

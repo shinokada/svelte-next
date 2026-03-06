@@ -4,6 +4,7 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -63,7 +64,8 @@ func HasStagedChanges(dir string) (bool, error) {
 	if err == nil {
 		return false, nil // exit 0 → nothing staged
 	}
-	if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
 		return true, nil // exit 1 → staged changes present
 	}
 	return false, fmt.Errorf("git: diff --cached: %w", err)
@@ -93,7 +95,10 @@ func run(dir string, name string, args ...string) error {
 	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%s %v: %w", name, args, err)
+	}
+	return nil
 }
 
 
