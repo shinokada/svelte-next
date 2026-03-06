@@ -131,21 +131,30 @@ func Run(opts Options) error {
 				svelteTarget = "svelte@" + opts.SvelteVer
 			}
 			ui.Infof("  installing: %s", svelteTarget)
-			var installExtraArgs []string
-			switch p.SvelteDependencySection() {
-			case "devDependencies":
-				installExtraArgs = []string{"-D", svelteTarget}
-			case "peerDependencies":
-				installExtraArgs = []string{"--save-peer", svelteTarget}
-			case "optionalDependencies":
-				installExtraArgs = []string{"--save-optional", svelteTarget}
-			default:
-				installExtraArgs = []string{svelteTarget}
+			// Install svelte into every section where it already appears.
+			// Libraries commonly list svelte in both peerDependencies and
+			// devDependencies; updating only one bucket would leave the other stale.
+			svelteSections := p.SvelteDependencySections()
+			if len(svelteSections) == 0 {
+				svelteSections = []string{""} // fall back to plain install
 			}
-			if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", installExtraArgs...); err != nil {
-				ui.Errorf("  [%s] svelte install failed: %v", name, err)
-				hadFailure = true
-				projectFailed = true
+			for _, sec := range svelteSections {
+				var installExtraArgs []string
+				switch sec {
+				case "devDependencies":
+					installExtraArgs = []string{"-D", svelteTarget}
+				case "peerDependencies":
+					installExtraArgs = []string{"--save-peer", svelteTarget}
+				case "optionalDependencies":
+					installExtraArgs = []string{"--save-optional", svelteTarget}
+				default:
+					installExtraArgs = []string{svelteTarget}
+				}
+				if err := pkgmanager.Run(dir, mgr, opts.DryRun, "install", installExtraArgs...); err != nil {
+					ui.Errorf("  [%s] svelte install failed (%s): %v", name, sec, err)
+					hadFailure = true
+					projectFailed = true
+				}
 			}
 		}
 

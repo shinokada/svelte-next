@@ -25,7 +25,9 @@ jobs:
           cache: true
 
       - name: Tidy
-        run: go mod tidy
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
 
       - name: Build
         run: go build ./...
@@ -52,10 +54,10 @@ jobs:
           cache: true
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@5742e2a672b9de69c5dc14e9fd35459b31cdc24b # v5.1.0
         with:
           distribution: goreleaser
-          version: latest
+          version: '~> v1'
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

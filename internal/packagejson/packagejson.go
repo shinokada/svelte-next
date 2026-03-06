@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // PackageJSON represents the fields of package.json that svelte-next cares
@@ -49,16 +50,19 @@ func (p *PackageJSON) SvelteMajor() (int, bool) {
 	if v == "" {
 		return 0, false
 	}
-	// Version strings may look like: 5.28.1 / 5.0.0-next.1 / 5.x / >=5
-	// We only need the leading integer segment.
-	v = strings.TrimLeft(v, "><=")
-	parts := strings.FieldsFunc(v, func(r rune) bool {
-		return r == '.' || r == '-'
-	})
-	if len(parts) == 0 {
+	// Version strings may look like: 5.28.1 / 5.0.0-next.1 / 5.x / >=5 / >=5 <6
+	// We only need the first numeric token.
+	v = strings.TrimSpace(v)
+	start := strings.IndexFunc(v, unicode.IsDigit)
+	if start == -1 {
 		return 0, false
 	}
-	major, err := strconv.Atoi(parts[0])
+	v = v[start:]
+	end := strings.IndexFunc(v, func(r rune) bool { return !unicode.IsDigit(r) })
+	if end != -1 {
+		v = v[:end]
+	}
+	major, err := strconv.Atoi(v)
 	if err != nil {
 		return 0, false
 	}
@@ -95,27 +99,38 @@ func (p *PackageJSON) SvelteIsDevDependency() bool {
 	return p.SvelteDependencySection() == "devDependencies"
 }
 
-// SvelteDependencySection returns the name of the dependency map that
-// currently contains "svelte": "dependencies", "devDependencies",
-// "peerDependencies", or "optionalDependencies". Returns "" if svelte is
-// not listed. Callers use this to preserve the original bucket when
-// re-installing svelte.
+// SvelteDependencySection returns the name of the first dependency map that
+// contains "svelte". Returns "" if svelte is not listed.
+// Deprecated: use SvelteDependencySections when you need all matching buckets.
 func (p *PackageJSON) SvelteDependencySection() string {
-	sections := []struct {
+	sections := p.SvelteDependencySections()
+	if len(sections) == 0 {
+		return ""
+	}
+	return sections[0]
+}
+
+// SvelteDependencySections returns the names of every dependency map that
+// contains "svelte" (e.g. both "peerDependencies" and "devDependencies" for
+// library packages). Returns nil if svelte is not listed in any section.
+func (p *PackageJSON) SvelteDependencySections() []string {
+	type section struct {
 		name string
 		m    map[string]string
-	}{
+	}
+	all := []section{
 		{"dependencies", p.Dependencies},
 		{"devDependencies", p.DevDependencies},
 		{"peerDependencies", p.PeerDependencies},
 		{"optionalDependencies", p.OptionalDependencies},
 	}
-	for _, s := range sections {
+	var found []string
+	for _, s := range all {
 		if _, ok := s.m["svelte"]; ok {
-			return s.name
+			found = append(found, s.name)
 		}
 	}
-	return ""
+	return found
 }
 
 // lookupDep searches all four dependency maps for key and returns its value,

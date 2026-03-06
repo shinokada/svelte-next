@@ -58,6 +58,8 @@ func TestSvelteMajor(t *testing.T) {
 		{`{"devDependencies":{"svelte":"^4.2.8"}}`, 4, true},
 		{`{"devDependencies":{"svelte":"5.0.0-next.1"}}`, 5, true},
 		{`{"devDependencies":{"svelte":">=5"}}`, 5, true},
+		{`{"devDependencies":{"svelte":">=5 <6"}}`, 5, true},
+		{`{"devDependencies":{"svelte":">= 5.0.0"}}`, 5, true},
 		{`{"dependencies":{"react":"18.0.0"}}`, 0, false},
 		{`{}`, 0, false},
 	}
@@ -124,6 +126,53 @@ func TestSvelteIsDevDependency(t *testing.T) {
 			}
 			if got := p.SvelteIsDevDependency(); got != tc.want {
 				t.Errorf("SvelteIsDevDependency() = %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestSvelteDependencySections(t *testing.T) {
+	tests := []struct {
+		name string
+		json string
+		want []string
+	}{
+		{
+			"peer and dev (library pattern)",
+			`{"peerDependencies":{"svelte":"^5.0.0"},"devDependencies":{"svelte":"^5.0.0"}}`,
+			[]string{"devDependencies", "peerDependencies"},
+		},
+		{
+			"only devDependencies",
+			`{"devDependencies":{"svelte":"^5.0.0"}}`,
+			[]string{"devDependencies"},
+		},
+		{
+			"absent",
+			`{}`,
+			nil,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			path := writeTemp(t, tc.json)
+			p, err := Read(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := p.SvelteDependencySections()
+			if len(got) != len(tc.want) {
+				t.Errorf("SvelteDependencySections() = %v, want %v", got, tc.want)
+				return
+			}
+			gotSet := make(map[string]bool, len(got))
+			for _, s := range got {
+				gotSet[s] = true
+			}
+			for _, w := range tc.want {
+				if !gotSet[w] {
+					t.Errorf("SvelteDependencySections() = %v, missing %q", got, w)
+				}
 			}
 		})
 	}
