@@ -28,7 +28,7 @@ Built in Go in a single static binary. It runs natively on macOS, Linux, and Win
 ### Homebrew (macOS and Linux)
 
 ```sh
-brew tap shinokada/svelte-next
+brew tap shinokada/homebrew-svelte-next
 brew install svelte-next
 ```
 
@@ -205,10 +205,10 @@ svelte-next list --help
 
 | Action        | pnpm           | npm                        | yarn                    | bun                   |
 | ------------- | -------------- | -------------------------- | ----------------------- | --------------------- |
-| Install       | `pnpm install` | `npm install`              | `yarn add`              | `bun add`             |
+| Install       | `pnpm add`     | `npm install`              | `yarn add`              | `bun add`             |
 | Update        | `pnpm update`  | `npm update`               | `yarn upgrade`          | `bun update`          |
 | Update latest | `pnpm up -L`   | `npx npm-check-updates -u` | `yarn upgrade --latest` | `bun update --latest` |
-| Run script    | `pnpm`         | `npm`                      | `yarn`                  | `bun`                 |
+| Run script    | `pnpm`         | `npm run`                  | `yarn`                  | `bun`                 |
 
 > **npm note:** `--latest` uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) since npm has no native equivalent. This rewrites `package.json` before reinstalling.
 

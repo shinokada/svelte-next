@@ -88,6 +88,44 @@ func TestFetch_AllFail(t *testing.T) {
 	}
 }
 
+func TestFetch_FallsThrough_OnParseError(t *testing.T) {
+	// First API returns 200 but unparseable JSON; second API should be tried.
+	bad := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(t, w, `not json`)
+	}))
+	defer bad.Close()
+
+	good := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(t, w, `{"quote":"Try again","author":"Nobody"}`)
+	}))
+	defer good.Close()
+
+	apis := []API{
+		{URL: bad.URL, Parse: DefaultAPIs[0].Parse},
+		{URL: good.URL, Parse: DefaultAPIs[1].Parse},
+	}
+	got, err := Fetch(apis, 5*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "Try again - Nobody" {
+		t.Errorf("got %q", got)
+	}
+}
+
+func TestFetch_NilParser(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeJSON(t, w, `{"quote":"hello","author":"world"}`)
+	}))
+	defer srv.Close()
+
+	apis := []API{{URL: srv.URL, Parse: nil}}
+	_, err := Fetch(apis, 5*time.Second)
+	if err == nil {
+		t.Error("expected error for nil parser")
+	}
+}
+
 func TestFetch_InvalidJSON(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(t, w, `not json`)

@@ -10,6 +10,9 @@ import (
 // initRepo initialises a git repo in a temp dir and returns its path.
 func initRepo(t *testing.T) string {
 	t.Helper()
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git binary not found, skipping integration test")
+	}
 	dir := t.TempDir()
 	for _, args := range [][]string{
 		{"init"},

@@ -3,6 +3,7 @@ package pkgmanager
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
@@ -56,7 +57,7 @@ func TestBuildArgv_Pnpm(t *testing.T) {
 		args []string
 		want []string
 	}{
-		{"install", []string{"-D", "svelte@latest"}, []string{"pnpm", "install", "-D", "svelte@latest"}},
+		{"install", []string{"-D", "svelte@latest"}, []string{"pnpm", "add", "-D", "svelte@latest"}},
 		{"update", nil, []string{"pnpm", "update"}},
 		{"update-latest", nil, []string{"pnpm", "up", "-L"}},
 		{"run", []string{"test:integration"}, []string{"pnpm", "test:integration"}},
@@ -67,7 +68,7 @@ func TestBuildArgv_Pnpm(t *testing.T) {
 			t.Errorf("buildArgv(pnpm, %q) error: %v", tc.cmd, err)
 			continue
 		}
-		if !sliceEq(got, tc.want) {
+		if !slices.Equal(got, tc.want) {
 			t.Errorf("buildArgv(pnpm, %q) = %v, want %v", tc.cmd, got, tc.want)
 		}
 	}
@@ -79,7 +80,7 @@ func TestBuildArgv_Npm(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []string{"npx", "--yes", "npm-check-updates", "-u"}
-	if !sliceEq(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
@@ -90,7 +91,7 @@ func TestBuildArgv_Bun(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []string{"bun", "update", "--latest"}
-	if !sliceEq(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
@@ -101,7 +102,7 @@ func TestBuildArgv_Yarn(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []string{"yarn", "upgrade", "--latest"}
-	if !sliceEq(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
@@ -120,14 +121,4 @@ func TestBuildArgv_UnknownManager(t *testing.T) {
 	}
 }
 
-func sliceEq(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
+

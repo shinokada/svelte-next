@@ -39,7 +39,11 @@ func CurrentBranch(dir string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("git: branch: %w", err)
 	}
-	return strings.TrimSpace(string(out)), nil
+	branch := strings.TrimSpace(string(out))
+	if branch == "" {
+		return "", fmt.Errorf("git: detached HEAD state (no current branch)")
+	}
+	return branch, nil
 }
 
 // Add stages all changes in dir (`git add -A`).

@@ -31,4 +31,4 @@ coverage.out
 *.log
 
 # Project binary (if generated)
-gitstart
+svelte-next

@@ -116,7 +116,7 @@ func bunArgv(cmd string, args ...string) ([]string, error) {
 func pnpmArgv(cmd string, args ...string) ([]string, error) {
 	switch cmd {
 	case "install":
-		return append([]string{"pnpm", "install"}, args...), nil
+		return append([]string{"pnpm", "add"}, args...), nil
 	case "update":
 		return append([]string{"pnpm", "update"}, args...), nil
 	case "update-latest":
@@ -155,7 +155,7 @@ func npmArgv(cmd string, args ...string) ([]string, error) {
 		// The caller is expected to follow up with a separate "install" call.
 		return []string{"npx", "--yes", "npm-check-updates", "-u"}, nil
 	case "run":
-		return append([]string{"npm"}, args...), nil
+		return append([]string{"npm", "run"}, args...), nil
 	}
 	return nil, fmt.Errorf("pkgmanager: unknown command %q for npm", cmd)
 }

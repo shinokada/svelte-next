@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/shinokada/svelte-next/internal/update"
@@ -81,8 +79,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := update.Run(opts); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return err
 	}
 	return nil
 }

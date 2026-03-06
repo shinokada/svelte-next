@@ -131,16 +131,29 @@ func Run(opts Options) error {
 				ui.Errorf("  [%s] git add failed: %v", name, err)
 				hadFailure = true
 			} else {
-				staged, _ := git.HasStagedChanges(dir)
+				staged, err := git.HasStagedChanges(dir)
+				if err != nil {
+					ui.Warnf("  [%s] could not check staged changes: %v", name, err)
+				}
 				if staged || opts.DryRun {
-					branch, _ := git.CurrentBranch(dir)
-					msg := fmt.Sprintf("chore: update svelte to %s", p.SvelteVersion())
+					branch, err := git.CurrentBranch(dir)
+					if err != nil {
+						ui.Warnf("  [%s] could not determine branch, skipping push: %v", name, err)
+						branch = ""
+					}
+					newVer := "latest"
+					if opts.SvelteVer != "" {
+						newVer = opts.SvelteVer
+					}
+					msg := fmt.Sprintf("chore: update svelte to %s", newVer)
 					if err := git.Commit(dir, msg, opts.DryRun); err != nil {
 						ui.Errorf("  [%s] git commit failed: %v", name, err)
 						hadFailure = true
-					} else if err := git.Push(dir, branch, opts.DryRun); err != nil {
-						ui.Errorf("  [%s] git push failed: %v", name, err)
-						hadFailure = true
+					} else if branch != "" {
+						if err := git.Push(dir, branch, opts.DryRun); err != nil {
+							ui.Errorf("  [%s] git push failed: %v", name, err)
+							hadFailure = true
+						}
 					}
 				} else {
 					ui.Infof("  [%s] nothing to commit", name)

@@ -2,7 +2,7 @@ BINARY  := svelte-next
 VERSION ?= $(shell git describe --tags --always 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-X github.com/shinokada/svelte-next/cmd.Version=$(VERSION)"
 
-.PHONY: all build test lint clean tidy release-dry
+.PHONY: all build go.sum test test-verbose lint tidy clean release-dry install help
 
 all: build
 

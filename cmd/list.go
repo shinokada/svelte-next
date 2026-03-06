@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/shinokada/svelte-next/internal/list"
@@ -59,8 +57,7 @@ func runList(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := list.Run(opts); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return err
 	}
 	return nil
 }

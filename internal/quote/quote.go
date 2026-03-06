@@ -71,6 +71,12 @@ func Fetch(apis []API, timeout time.Duration) (string, error) {
 }
 
 func fetchOne(client *http.Client, api API) (string, error) {
+	const maxBodySize = 1 << 20 // 1 MiB
+
+	if api.Parse == nil {
+		return "", fmt.Errorf("quote: no parser configured for %s", api.URL)
+	}
+
 	req, err := http.NewRequest(http.MethodGet, api.URL, nil)
 	if err != nil {
 		return "", err
@@ -88,9 +94,12 @@ func fetchOne(client *http.Client, api API) (string, error) {
 		return "", fmt.Errorf("quote: HTTP %d from %s", resp.StatusCode, api.URL)
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBodySize+1))
 	if err != nil {
 		return "", err
+	}
+	if int64(len(body)) > maxBodySize {
+		return "", fmt.Errorf("quote: response from %s exceeded %d bytes", api.URL, maxBodySize)
 	}
 
 	return api.Parse(body)

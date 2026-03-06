@@ -55,7 +55,7 @@ brews:
     description: Update Svelte 5+ projects across multiple directories
     repository:
       owner: shinokada
-      name: homebrew-tap
+      name: homebrew-svelte-next
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
