@@ -12,10 +12,20 @@ import (
 // testTimeout is a short duration sufficient for in-process httptest servers.
 const testTimeout = 500 * time.Millisecond
 
-// Parser references extracted by format, independent of DefaultAPIs ordering.
+// parserByURL returns the Parse func from DefaultAPIs whose URL contains substr.
+// This decouples tests from the slice ordering of DefaultAPIs.
+func parserByURL(substr string) func([]byte) (string, error) {
+	for _, api := range DefaultAPIs {
+		if strings.Contains(api.URL, substr) {
+			return api.Parse
+		}
+	}
+	panic("no DefaultAPI URL containing " + substr)
+}
+
 var (
-	parseZenQuotes  = DefaultAPIs[0].Parse // expects [{q,a}] array
-	parseQuoteSlate = DefaultAPIs[1].Parse // expects {quote,author} object
+	parseZenQuotes  = parserByURL("zenquotes")  // expects [{q,a}] array
+	parseQuoteSlate = parserByURL("quoteslate") // expects {quote,author} object
 )
 
 // writeJSON is a test helper that writes a JSON body, failing the test on error.

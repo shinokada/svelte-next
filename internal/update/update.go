@@ -4,6 +4,7 @@ package update
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/shinokada/svelte-next/internal/git"
 	"github.com/shinokada/svelte-next/internal/packagejson"
@@ -27,6 +28,9 @@ type Options struct {
 	From       int
 	Exclude    []string
 }
+
+// quoteTimeout is the per-request deadline for fetching a motivational quote.
+const quoteTimeout = 5 * time.Second
 
 // Run iterates over subdirectories of opts.TargetDir, updating Svelte 5+
 // projects in each one.
@@ -54,6 +58,9 @@ func Run(opts Options) error {
 
 	var hadFailure bool
 
+	// NOTE: Each step runs independently; a failure in one step does not block
+	// subsequent steps within the same project. This allows all errors to surface
+	// in a single run. The git workflow is skipped when prior steps have failed.
 	for _, dir := range dirs {
 		name := filepath.Base(dir)
 		pkgPath := filepath.Join(dir, "package.json")
@@ -131,7 +138,7 @@ func Run(opts Options) error {
 		}
 
 		// ── 7. Git workflow ──────────────────────────────────────────────────
-		if !opts.SkipGit && git.IsGitRepo(dir) {
+		if !opts.SkipGit && !projectFailed && git.IsGitRepo(dir) {
 			if err := git.Add(dir, opts.DryRun); err != nil {
 				ui.Errorf("  [%s] git add failed: %v", name, err)
 				hadFailure = true
@@ -178,7 +185,7 @@ func Run(opts Options) error {
 
 	// ── 8. Motivational quote ────────────────────────────────────────────────
 	if !opts.DryRun {
-		if q, err := quote.Fetch(quote.DefaultAPIs, 5_000_000_000 /* 5s */); err == nil {
+		if q, err := quote.Fetch(quote.DefaultAPIs, quoteTimeout); err == nil {
 			fmt.Println()
 			ui.Infof("💬 %s", q)
 		}
