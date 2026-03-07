@@ -80,16 +80,18 @@ func TestSvelteMajor(t *testing.T) {
 		{`{}`, 0, false},
 	}
 	for _, tc := range tests {
-		path := writeTemp(t, tc.json)
-		p, err := Read(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		gotMajor, gotOK := p.SvelteMajor()
-		if gotMajor != tc.wantMajor || gotOK != tc.wantOK {
-			t.Errorf("SvelteMajor() = (%d, %v), want (%d, %v) for %s",
-				gotMajor, gotOK, tc.wantMajor, tc.wantOK, tc.json)
-		}
+		t.Run(tc.json, func(t *testing.T) {
+			path := writeTemp(t, tc.json)
+			p, err := Read(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			gotMajor, gotOK := p.SvelteMajor()
+			if gotMajor != tc.wantMajor || gotOK != tc.wantOK {
+				t.Errorf("SvelteMajor() = (%d, %v), want (%d, %v)",
+					gotMajor, gotOK, tc.wantMajor, tc.wantOK)
+			}
+		})
 	}
 }
 
@@ -132,6 +134,7 @@ func TestSvelteIsDevDependency(t *testing.T) {
 		{"in devDependencies", `{"devDependencies":{"svelte":"^5.0.0"}}`, true},
 		{"in dependencies", `{"dependencies":{"svelte":"^5.0.0"}}`, false},
 		{"in peerDependencies", `{"peerDependencies":{"svelte":"^5.0.0"}}`, false},
+		{"in optionalDependencies", `{"optionalDependencies":{"svelte":"^5.0.0"}}`, false},
 		// Library pattern: svelte in both devDependencies and peerDependencies means
 		// it is a peer requirement, so it is not treated as exclusively a dev dependency.
 		{"in dev and peer (library pattern)", `{"devDependencies":{"svelte":"^5.0.0"},"peerDependencies":{"svelte":"^5.0.0"}}`, false},
