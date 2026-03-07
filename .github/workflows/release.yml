@@ -54,7 +54,7 @@ jobs:
           cache: true
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@5742e2a672b9de69c5dc14e9fd35459b31cdc24b # v5.1.0
+        uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: '~> v1'
