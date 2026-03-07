@@ -59,16 +59,22 @@ func (p *PackageJSON) SvelteMajor() (int, bool) {
 	}
 	// Accepted: 5.28.1 / ^5 / ~5.0.0 / >=5 / >=5 <6 / workspace:^5 / npm:svelte@5
 	// Rejected: file:../path / git+https://... / http://... (non-semver protocols)
-	v = strings.TrimSpace(v)
-	m := svelteMajorRe.FindStringSubmatch(v)
-	if len(m) != 2 {
+	// Unions like "^4 || ^5" return the highest major found across all clauses.
+	best := -1
+	for _, clause := range strings.Split(v, "||") {
+		m := svelteMajorRe.FindStringSubmatch(strings.TrimSpace(clause))
+		if len(m) != 2 {
+			continue
+		}
+		major, err := strconv.Atoi(m[1])
+		if err == nil && major > best {
+			best = major
+		}
+	}
+	if best == -1 {
 		return 0, false
 	}
-	major, err := strconv.Atoi(m[1])
-	if err != nil {
-		return 0, false
-	}
-	return major, true
+	return best, true
 }
 
 // HasScript returns true if the named script exists in the "scripts" map.
