@@ -53,34 +53,35 @@ func TestRead_Dependency(t *testing.T) {
 
 func TestSvelteMajor(t *testing.T) {
 	tests := []struct {
+		name      string
 		json      string
 		wantMajor int
 		wantOK    bool
 	}{
-		{`{"devDependencies":{"svelte":"^5.28.1"}}`, 5, true},
-		{`{"devDependencies":{"svelte":"^4.2.8"}}`, 4, true},
-		{`{"devDependencies":{"svelte":"5.0.0-next.1"}}`, 5, true},
-		{`{"devDependencies":{"svelte":">=5"}}`, 5, true},
-		{`{"devDependencies":{"svelte":">=5 <6"}}`, 5, true},
-		{`{"devDependencies":{"svelte":">= 5.0.0"}}`, 5, true},
-		{`{"devDependencies":{"svelte":"workspace:^5.0.0"}}`, 5, true},
-		{`{"devDependencies":{"svelte":"npm:svelte@5.0.0"}}`, 5, true},
-		{`{"devDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
-		{`{"devDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
-		{`{"devDependencies":{"svelte":"^5 || ^4"}}`, 5, true},
-		{`{"optionalDependencies":{"svelte":"^5.0.0"}}`, 5, true},
+		{"dev caret v5", `{"devDependencies":{"svelte":"^5.28.1"}}`, 5, true},
+		{"dev caret v4", `{"devDependencies":{"svelte":"^4.2.8"}}`, 4, true},
+		{"dev prerelease", `{"devDependencies":{"svelte":"5.0.0-next.1"}}`, 5, true},
+		{"gte range", `{"devDependencies":{"svelte":">=5"}}`, 5, true},
+		{"gte+lt range", `{"devDependencies":{"svelte":">=5 <6"}}`, 5, true},
+		{"gte range with space", `{"devDependencies":{"svelte":">= 5.0.0"}}`, 5, true},
+		{"workspace alias", `{"devDependencies":{"svelte":"workspace:^5.0.0"}}`, 5, true},
+		{"npm alias", `{"devDependencies":{"svelte":"npm:svelte@5.0.0"}}`, 5, true},
+		{"union low-to-high", `{"devDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
+		{"union below v5", `{"devDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
+		{"union high-to-low", `{"devDependencies":{"svelte":"^5 || ^4"}}`, 5, true},
+		{"optional dependency", `{"optionalDependencies":{"svelte":"^5.0.0"}}`, 5, true},
 		// Mixed buckets: peerDependencies advertises ^5 support even though devDependencies pins ^4.
-		{`{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
+		{"mixed buckets dev=v4 peer=v4||v5", `{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
 		// All buckets below 5: should not be treated as Svelte 5.
-		{`{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
-		{`{"devDependencies":{"svelte":"file:../svelte5-local"}}`, 0, false},
-		{`{"devDependencies":{"svelte":"git+https://github.com/sveltejs/svelte"}}`, 0, false},
-		{`{"devDependencies":{"svelte":"https://example.com/svelte.tgz"}}`, 0, false},
-		{`{"dependencies":{"react":"18.0.0"}}`, 0, false},
-		{`{}`, 0, false},
+		{"mixed buckets all below v5", `{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
+		{"file protocol", `{"devDependencies":{"svelte":"file:../svelte5-local"}}`, 0, false},
+		{"git protocol", `{"devDependencies":{"svelte":"git+https://github.com/sveltejs/svelte"}}`, 0, false},
+		{"https tarball", `{"devDependencies":{"svelte":"https://example.com/svelte.tgz"}}`, 0, false},
+		{"no svelte dep", `{"dependencies":{"react":"18.0.0"}}`, 0, false},
+		{"empty manifest", `{}`, 0, false},
 	}
 	for _, tc := range tests {
-		t.Run(tc.json, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			path := writeTemp(t, tc.json)
 			p, err := Read(path)
 			if err != nil {
@@ -189,6 +190,12 @@ func TestSvelteDependencySections(t *testing.T) {
 				t.Fatal(err)
 			}
 			got := p.SvelteDependencySections()
+			if tc.want == nil {
+				if got != nil {
+					t.Errorf("SvelteDependencySections() = %v, want nil", got)
+				}
+				return
+			}
 			if len(got) != len(tc.want) {
 				t.Errorf("SvelteDependencySections() = %v, want %v", got, tc.want)
 				return
