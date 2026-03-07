@@ -68,6 +68,7 @@ func TestSvelteMajor(t *testing.T) {
 		{`{"devDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
 		{`{"devDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
 		{`{"devDependencies":{"svelte":"^5 || ^4"}}`, 5, true},
+		{`{"optionalDependencies":{"svelte":"^5.0.0"}}`, 5, true},
 		// Mixed buckets: peerDependencies advertises ^5 support even though devDependencies pins ^4.
 		{`{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
 		// All buckets below 5: should not be treated as Svelte 5.
@@ -112,7 +113,8 @@ func TestHasScript(t *testing.T) {
 }
 
 func TestRead_MissingFile(t *testing.T) {
-	_, err := Read("/nonexistent/package.json")
+	path := filepath.Join(t.TempDir(), "missing-package.json")
+	_, err := Read(path)
 	if err == nil {
 		t.Error("expected error for missing file")
 	}
