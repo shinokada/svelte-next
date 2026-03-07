@@ -43,6 +43,9 @@ func TestRead_Dependency(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if !p.HasSvelte() {
+		t.Error("HasSvelte() = false, want true")
+	}
 	if got := p.SvelteVersion(); got != "5.0.0" {
 		t.Errorf("SvelteVersion() = %q, want %q", got, "5.0.0")
 	}
@@ -127,7 +130,9 @@ func TestSvelteIsDevDependency(t *testing.T) {
 		{"in devDependencies", `{"devDependencies":{"svelte":"^5.0.0"}}`, true},
 		{"in dependencies", `{"dependencies":{"svelte":"^5.0.0"}}`, false},
 		{"in peerDependencies", `{"peerDependencies":{"svelte":"^5.0.0"}}`, false},
-		{"in dev and peer", `{"devDependencies":{"svelte":"^5.0.0"},"peerDependencies":{"svelte":"^5.0.0"}}`, false},
+		// Library pattern: svelte in both devDependencies and peerDependencies means
+		// it is a peer requirement, so it is not treated as exclusively a dev dependency.
+		{"in dev and peer (library pattern)", `{"devDependencies":{"svelte":"^5.0.0"},"peerDependencies":{"svelte":"^5.0.0"}}`, false},
 		{"absent", `{}`, false},
 	}
 	for _, tc := range tests {
