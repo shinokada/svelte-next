@@ -49,26 +49,44 @@ func (p *PackageJSON) SvelteVersion() string {
 // protocols to avoid false-positive version detection.
 var svelteMajorRe = regexp.MustCompile(`^(?:workspace:)?(?:npm:svelte@)?\s*[~^<>=v]*\s*(\d+)`)
 
-// SvelteMajor parses the major version number from SvelteVersion().
-// Returns (major, true) on success, (0, false) if svelte is not present or
-// the version string cannot be parsed.
+// SvelteMajor returns the highest Svelte major version declared across all
+// dependency sections. It aggregates every specifier for "svelte" in
+// dependencies, devDependencies, peerDependencies, and optionalDependencies,
+// expands ||-separated unions within each specifier, and returns the highest
+// parsed major. This correctly handles library manifests that declare
+// different ranges per section (e.g. devDependencies: "^4",
+// peerDependencies: "^4 || ^5") and returns (5, true) in that case.
+// Returns (0, false) if svelte is absent or no specifier can be parsed.
 func (p *PackageJSON) SvelteMajor() (int, bool) {
-	v := p.SvelteVersion()
-	if v == "" {
+	if !p.HasSvelte() {
 		return 0, false
+	}
+	// Collect every declared svelte specifier across all sections.
+	specs := make([]string, 0, 4)
+	for _, m := range []map[string]string{
+		p.Dependencies,
+		p.DevDependencies,
+		p.PeerDependencies,
+		p.OptionalDependencies,
+	} {
+		if v, ok := m["svelte"]; ok {
+			specs = append(specs, stripPrefix(v))
+		}
 	}
 	// Accepted: 5.28.1 / ^5 / ~5.0.0 / >=5 / >=5 <6 / workspace:^5 / npm:svelte@5
 	// Rejected: file:../path / git+https://... / http://... (non-semver protocols)
 	// Unions like "^4 || ^5" return the highest major found across all clauses.
 	best := -1
-	for _, clause := range strings.Split(v, "||") {
-		m := svelteMajorRe.FindStringSubmatch(strings.TrimSpace(clause))
-		if len(m) != 2 {
-			continue
-		}
-		major, err := strconv.Atoi(m[1])
-		if err == nil && major > best {
-			best = major
+	for _, spec := range specs {
+		for _, clause := range strings.Split(spec, "||") {
+			m := svelteMajorRe.FindStringSubmatch(strings.TrimSpace(clause))
+			if len(m) != 2 {
+				continue
+			}
+			major, err := strconv.Atoi(m[1])
+			if err == nil && major > best {
+				best = major
+			}
 		}
 	}
 	if best == -1 {
@@ -100,9 +118,9 @@ func (p *PackageJSON) HasSvelte() bool {
 	return lookupDep(p, "svelte") != ""
 }
 
-// SvelteIsDevDependency returns true if "svelte" is declared in
-// devDependencies (and not in any other section). This is a convenience
-// wrapper around SvelteDependencySection.
+// SvelteIsDevDependency returns true if "svelte" is declared exclusively in
+// devDependencies (i.e. it appears in no other section). It uses
+// SvelteDependencySections to check all buckets.
 func (p *PackageJSON) SvelteIsDevDependency() bool {
 	sections := p.SvelteDependencySections()
 	return len(sections) == 1 && sections[0] == "devDependencies"

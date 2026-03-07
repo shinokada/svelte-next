@@ -65,6 +65,10 @@ func TestSvelteMajor(t *testing.T) {
 		{`{"devDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
 		{`{"devDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
 		{`{"devDependencies":{"svelte":"^5 || ^4"}}`, 5, true},
+		// Mixed buckets: peerDependencies advertises ^5 support even though devDependencies pins ^4.
+		{`{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^4 || ^5"}}`, 5, true},
+		// All buckets below 5: should not be treated as Svelte 5.
+		{`{"devDependencies":{"svelte":"^4"},"peerDependencies":{"svelte":"^3 || ^4"}}`, 4, true},
 		{`{"devDependencies":{"svelte":"file:../svelte5-local"}}`, 0, false},
 		{`{"devDependencies":{"svelte":"git+https://github.com/sveltejs/svelte"}}`, 0, false},
 		{`{"devDependencies":{"svelte":"https://example.com/svelte.tgz"}}`, 0, false},
