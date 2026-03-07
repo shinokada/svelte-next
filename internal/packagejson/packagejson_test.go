@@ -168,6 +168,11 @@ func TestSvelteDependencySections(t *testing.T) {
 			[]string{"devDependencies"},
 		},
 		{
+			"only optionalDependencies",
+			`{"optionalDependencies":{"svelte":"^5.0.0"}}`,
+			[]string{"optionalDependencies"},
+		},
+		{
 			"absent",
 			`{}`,
 			nil,
