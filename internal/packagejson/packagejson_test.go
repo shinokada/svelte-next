@@ -60,6 +60,11 @@ func TestSvelteMajor(t *testing.T) {
 		{`{"devDependencies":{"svelte":">=5"}}`, 5, true},
 		{`{"devDependencies":{"svelte":">=5 <6"}}`, 5, true},
 		{`{"devDependencies":{"svelte":">= 5.0.0"}}`, 5, true},
+		{`{"devDependencies":{"svelte":"workspace:^5.0.0"}}`, 5, true},
+		{`{"devDependencies":{"svelte":"npm:svelte@5.0.0"}}`, 5, true},
+		{`{"devDependencies":{"svelte":"file:../svelte5-local"}}`, 0, false},
+		{`{"devDependencies":{"svelte":"git+https://github.com/sveltejs/svelte"}}`, 0, false},
+		{`{"devDependencies":{"svelte":"https://example.com/svelte.tgz"}}`, 0, false},
 		{`{"dependencies":{"react":"18.0.0"}}`, 0, false},
 		{`{}`, 0, false},
 	}

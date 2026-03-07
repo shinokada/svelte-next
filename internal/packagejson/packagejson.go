@@ -6,9 +6,9 @@ package packagejson
 import (
 	"encoding/json"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 // PackageJSON represents the fields of package.json that svelte-next cares
@@ -42,6 +42,13 @@ func (p *PackageJSON) SvelteVersion() string {
 	return stripPrefix(v)
 }
 
+// svelteMajorRe matches the leading major version number from semver-like
+// specifiers, including plain versions (5.0.0), range prefixes (^~<>=v),
+// comparator ranges (>=5 <6), workspace: aliases, and npm: aliases.
+// Intentionally does not match file:, git+, http:, or other non-semver
+// protocols to avoid false-positive version detection.
+var svelteMajorRe = regexp.MustCompile(`^(?:workspace:)?(?:npm:svelte@)?\s*[~^<>=v]*\s*(\d+)`)
+
 // SvelteMajor parses the major version number from SvelteVersion().
 // Returns (major, true) on success, (0, false) if svelte is not present or
 // the version string cannot be parsed.
@@ -50,19 +57,14 @@ func (p *PackageJSON) SvelteMajor() (int, bool) {
 	if v == "" {
 		return 0, false
 	}
-	// Version strings may look like: 5.28.1 / 5.0.0-next.1 / 5.x / >=5 / >=5 <6
-	// We only need the first numeric token.
+	// Accepted: 5.28.1 / ^5 / ~5.0.0 / >=5 / >=5 <6 / workspace:^5 / npm:svelte@5
+	// Rejected: file:../path / git+https://... / http://... (non-semver protocols)
 	v = strings.TrimSpace(v)
-	start := strings.IndexFunc(v, unicode.IsDigit)
-	if start == -1 {
+	m := svelteMajorRe.FindStringSubmatch(v)
+	if len(m) != 2 {
 		return 0, false
 	}
-	v = v[start:]
-	end := strings.IndexFunc(v, func(r rune) bool { return !unicode.IsDigit(r) })
-	if end != -1 {
-		v = v[:end]
-	}
-	major, err := strconv.Atoi(v)
+	major, err := strconv.Atoi(m[1])
 	if err != nil {
 		return 0, false
 	}
