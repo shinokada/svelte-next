@@ -38,6 +38,16 @@ To upgrade:
 brew upgrade svelte-next
 ```
 
+### Go install
+
+If you have Go 1.21 or later installed:
+
+```sh
+go install github.com/shinokada/svelte-next@latest
+```
+
+The binary will be placed in `$GOPATH/bin` (usually `~/go/bin`). Make sure that directory is on your `PATH`.
+
 ### Debian / Ubuntu (deb)
 
 Download the `.deb` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest):
@@ -58,7 +68,19 @@ To upgrade an existing install, replace `-i` with `-U`.
 
 ### Windows
 
-Download the `.zip` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), extract it, and add the directory to your `PATH`. No WSL, Git Bash, or Cygwin needed — the binary runs natively in CMD and PowerShell.
+Using [Scoop](https://scoop.sh):
+
+```sh
+scoop install svelte-next
+```
+
+Using [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/):
+
+```sh
+winget install shinokada.svelte-next
+```
+
+Or download the `.zip` for your architecture from the [releases page](https://github.com/shinokada/svelte-next/releases/latest), extract it, and add the directory to your `PATH`. No WSL, Git Bash, or Cygwin needed — the binary runs natively in CMD and PowerShell.
 
 ### Manual (tarball)
 
@@ -73,6 +95,8 @@ sudo mv svelte-next /usr/local/bin/
 ```
 
 ### Build from source
+
+Requires **Go 1.21 or later** — see [go.dev/dl](https://go.dev/dl/) to install.
 
 ```sh
 git clone https://github.com/shinokada/svelte-next.git
@@ -203,12 +227,12 @@ svelte-next list --help
 
 ## Package Manager Commands
 
-| Action        | pnpm           | npm                        | yarn                    | bun                   |
-| ------------- | -------------- | -------------------------- | ----------------------- | --------------------- |
-| Install       | `pnpm add`     | `npm install`              | `yarn add`              | `bun add`             |
-| Update        | `pnpm update`  | `npm update`               | `yarn upgrade`          | `bun update`          |
-| Update latest | `pnpm up -L`   | `npx npm-check-updates -u` | `yarn upgrade --latest` | `bun update --latest` |
-| Run script    | `pnpm`         | `npm run`                  | `yarn`                  | `bun`                 |
+| Action        | pnpm          | npm                        | yarn                    | bun                   |
+| ------------- | ------------- | -------------------------- | ----------------------- | --------------------- |
+| Install       | `pnpm add`    | `npm install`              | `yarn add`              | `bun add`             |
+| Update        | `pnpm update` | `npm update`               | `yarn upgrade`          | `bun update`          |
+| Update latest | `pnpm up -L`  | `npx npm-check-updates -u` | `yarn upgrade --latest` | `bun update --latest` |
+| Run script    | `pnpm`        | `npm run`                  | `yarn`                  | `bun`                 |
 
 > **npm note:** `--latest` uses [npm-check-updates](https://github.com/raineorshine/npm-check-updates) since npm has no native equivalent. This rewrites `package.json` before reinstalling.
 
