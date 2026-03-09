@@ -1,5 +1,7 @@
 # svelte-next
 
+REPO: https://github.com/shinokada/svelte-next
+
 > Automate Svelte 5+ version updates across multiple project directories.
 
 `svelte-next` scans a target directory, detects Svelte 5+ projects, and runs package updates, svelte installs, integration/e2e tests, and git commits — all in one command.
