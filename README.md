@@ -1,6 +1,6 @@
 # svelte-next
 
-REPO: https://github.com/shinokada/svelte-next
+REPO: [https://github.com/shinokada/svelte-next](https://github.com/shinokada/svelte-next)
 
 > Automate Svelte 5+ version updates across multiple project directories.
 
